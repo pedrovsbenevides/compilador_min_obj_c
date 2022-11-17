@@ -1,1 +1,22 @@
-x = new int
+ObjDef {
+    data: int ^x[2], char y, bool z, float ^w;
+    void ^f[2], void g;
+    
+    code: void func1();
+    int ^func2(x);
+    char func3(^x);
+    float ^func4(&^x);
+    bool func5(&x);
+    float ^func6(^x[]);
+    float func7(x[]);
+    void ^func8(x,^y,&z,&^w,k[],^k[]);
+
+    intern: void func10();
+    int ^func20(x);
+    char func30(^x);
+    float ^func40(&^x);
+    bool func50(&x);
+    float ^func60(^x[]);
+    float func70(x[]);
+    void ^func80(x,^y,&z,&^w,k[],^k[]);
+}
