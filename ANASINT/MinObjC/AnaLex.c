@@ -887,6 +887,8 @@ TOKEN AnaLex(FILE *fd)
 
                 t.cat = SN;
 
+                ungetc(c, fd);
+
                 t.codigo = E_COMERC;
 
                 return t;
