@@ -18,6 +18,8 @@ void DataSec();
 void DeclListVar();
 void DeclVar();
 void MethSec();
+void FuncProt();
+void TiposParam();
 void Atrib();
 void Tipo();
 void Expr();

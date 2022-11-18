@@ -1,3 +1,5 @@
+// Autores: Pedro Victor Santana Benevides e Rafael Roberto Coutinho da Cruz
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>

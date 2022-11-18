@@ -5,21 +5,21 @@ class ObjDef {
     float ^w, h;
     void ^f[2], g;
     
-    code: void func1();
-    int ^func2(x);
-    char func3(^x);
-    float ^func4(&^x);
-    bool func5(&x);
-    float ^func6(^x[]);
-    float func7(x[]);
-    void ^func8(x,^y,&z,&^w,k[],^k[]);
+    code: void func1(int &^f);
+    int ^func2(int &^x);
+    char func3(char ^x);
+    float ^func4(int &^x);
+    bool func5(char &x);
+    float ^func6(bool ^x[]);
+    float func7(bool x[]);
+    void ^func8(float x, int ^y, char &z, int &^w, float k[], char^k[]);
 
     intern: void func10();
-    int ^func20(x);
-    char func30(^x);
-    float ^func40(&^x);
-    bool func50(&x);
-    float ^func60(^x[]);
-    float func70(x[]);
-    void ^func80(x,^y,&z,&^w,k[],^k[]);
+    int ^func20(int &^x);
+    char func30(int ^x);
+    float ^func40(char &^x);
+    bool func50(char &x);
+    float ^func60(bool ^x[]);
+    float func70(bool x[]);
+    void ^func80(float x, float ^y, int &z, bool &^w, int u[], char ^k[]);
 }
