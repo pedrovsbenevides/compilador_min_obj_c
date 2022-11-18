@@ -267,7 +267,7 @@ void TestaAnasint()
     if ((fd = fopen("comand.dat", "r")) == NULL)
         error("Arquivo de entrada de comandos nao encontrado!");
 
-    Atrib();
+    Prog();
 
     if (tk.cat == FIM_ARQ)
         printf("Resultado> Expressao OK!\n");
@@ -305,6 +305,20 @@ void TestaAnasint()
                 break;
             case FECHA_PAR:
                 printf("<SN, FECHA_PARENTESES> ");
+                break;
+
+            case ABRE_COL:
+                printf("<SN, ABRE_COL> ");
+                break;
+            case FECHA_COL:
+                printf("<SN, FECHA_COL> ");
+                break;
+
+            case ABRE_CHAVE:
+                printf("<SN, ABRE_CHAVE> ");
+                break;
+            case FECHA_CHAVE:
+                printf("<SN, FECHA_CHAVE> ");
                 break;
             }
             break;

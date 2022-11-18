@@ -1,6 +1,9 @@
-ObjDef {
-    data: int ^x[2], char y, bool z, float ^w;
-    void ^f[2], void g;
+class ObjDef {
+    data: int x[2], ^l;
+    char y, j;
+    bool z, k;
+    float ^w, h;
+    void ^f[2], g;
     
     code: void func1();
     int ^func2(x);

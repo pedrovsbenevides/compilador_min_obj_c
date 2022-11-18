@@ -408,7 +408,7 @@ TOKEN AnaLex(FILE *fd)
             }
             break;
         case 4:
-            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '_'))
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_'))
             {
 
                 estado = 4;
