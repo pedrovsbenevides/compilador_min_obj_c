@@ -23,3 +23,33 @@ class ObjDef {
     float func70(bool x[]);
     void ^func80(float x, float ^y, int &z, bool &^w, int u[], char ^k[]);
 }
+
+
+<Decl>
+    <DeclListVar>
+    void x;
+    int ^d;
+    char s[];
+    float ^a[];
+    bool t;
+
+    void func1(tipos_param), func2(tipos_param);
+    int func3(tipos_param), func4(tipos_param);
+    char func5(tipos_param), func6(tipos_param);
+    float func7(tipos_param), func8(tipos_param);
+    bool func9(tipos_param), func10(tipos_param);
+
+<Func>
+    void func11(tipos_param) {
+        {<DeclListVar>} *ja presente em DataSec
+        ;
+        Cmd()
+    }
+
+    int ^IdEscopo::funcEscoped(tipos_param) {
+        {<DeclListVar>} *ja presente em DataSec
+        ;
+        Cmd()
+    }
+
+
