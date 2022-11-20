@@ -322,6 +322,9 @@ void TestaAnasint()
             case FECHA_CHAVE:
                 printf("<SN, FECHA_CHAVE> ");
                 break;
+            case PONTO_VIRG:
+                printf("<SN, PONTO_VIRG> ");
+                break;
             }
             break;
         case CT_I:

@@ -1,0 +1,7 @@
+decl_var_func ::= (tipo | void) [^]id (decl_list_var | decl_array_var [decl_list_var]|func_prot
+decl_list_var ::=  { ',' [^]id[decl_array_var]}
+decl_array_var ::= '[' intcon ']'
+func_prot ::=  '(' tipos_param')' (';'|func|decl_list_func)
+func ::= '{' decl_var_func { cmd } '}'
+decl_list_func ::= { ',' [^]id '(' tipos_param')' }
+
