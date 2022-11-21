@@ -128,36 +128,36 @@ void DataSec()
 		DeclVarFunc();
 
 		// ponto e virgula esperado
-		if (tk.processado)
-		{
-			tk = AnaLex(fd);
-		}
-		if (tk.cat != SN && tk.codigo != PONTO_VIRG)
-		{
-			error("ponto e virgula esperado");
-		}
-		else
-		{
-			if (mostraArvore)
-				PrintNodo(";", MANTEM);
-			tk.processado = TRUE;
-		}
+		// if (tk.processado)
+		// {
+		// 	tk = AnaLex(fd);
+		// }
+		// if (tk.cat != SN && tk.codigo != PONTO_VIRG)
+		// {
+		// 	error("ponto e virgula esperado");
+		// }
+		// else
+		// {
+		// 	if (mostraArvore)
+		// 		PrintNodo(";", MANTEM);
+		// 	tk.processado = TRUE;
+		// }
 
 		// sequencia de declListVar depois do ponto e virgula
 		tk = AnaLex(fd);
 		while (tk.cat == PR && (tk.codigo == VOID || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == FLOAT || tk.codigo == BOOL))
 		{
 			DeclVarFunc();
-			if (tk.cat != SN && tk.codigo != PONTO_VIRG)
-			{
-				error("ponto e virgula esperado");
-			}
-			else
-			{
-				if (mostraArvore)
-					PrintNodo(";", MANTEM);
-				tk.processado = TRUE;
-			}
+			// if (tk.cat != SN && tk.codigo != PONTO_VIRG)
+			// {
+			// 	error("ponto e virgula esperado");
+			// }
+			// else
+			// {
+			// 	if (mostraArvore)
+			// 		PrintNodo(";", MANTEM);
+			// 	tk.processado = TRUE;
+			// }
 
 			// token apos ponto e virgula
 			if (tk.processado)

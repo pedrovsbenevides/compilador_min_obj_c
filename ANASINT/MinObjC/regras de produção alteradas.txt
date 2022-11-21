@@ -1,7 +1,12 @@
-decl_var_func ::= (tipo | void) [^]id (decl_list_var | decl_array_var [decl_list_var]|func_prot
+prog ::= { obj_def | decl_var_func }
+data_sec ::= data: decl_var { decl_var }
+meth_sec ::= code: { sign_func } intern: { sign_func }
+decl_var ::= (tipo | void) [^]id (';'|decl_list_var | decl_array_var [decl_list_var])
+decl_var_func ::= (tipo | void) [^]id (';'|decl_list_var | decl_array_var decl_list_var|func_prot)
 decl_list_var ::=  { ',' [^]id[decl_array_var]}
 decl_array_var ::= '[' intcon ']'
+sign_func ::= (tipo | void) [^]id '(' tipos_param')' ';'
 func_prot ::=  '(' tipos_param')' (';'|func|decl_list_func)
-func ::= '{' decl_var_func { cmd } '}'
+func ::= '{' decl_var { cmd } '}'
 decl_list_func ::= { ',' [^]id '(' tipos_param')' }
 
