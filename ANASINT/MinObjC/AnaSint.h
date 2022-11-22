@@ -15,6 +15,8 @@ extern char TABS[200];
 void Prog();
 void ObjDef();
 void DataSec();
+void DeclVar();
+void SignFunc();
 void DeclVarFunc();
 void DeclListVar();
 void DeclListFunc();

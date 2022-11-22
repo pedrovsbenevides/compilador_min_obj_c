@@ -125,7 +125,7 @@ void DataSec()
 			PrintNodo(":", MANTEM);
 		tk.processado = TRUE;
 		// declaracao de variaveis da classe
-		DeclVarFunc();
+		DeclVar();
 
 		// ponto e virgula esperado
 		// if (tk.processado)
@@ -147,7 +147,7 @@ void DataSec()
 		tk = AnaLex(fd);
 		while (tk.cat == PR && (tk.codigo == VOID || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == FLOAT || tk.codigo == BOOL))
 		{
-			DeclVarFunc();
+			DeclVar();
 			// if (tk.cat != SN && tk.codigo != PONTO_VIRG)
 			// {
 			// 	error("ponto e virgula esperado");
@@ -173,6 +173,185 @@ void DataSec()
 	else
 	{
 		error("dois pontos esperado");
+	}
+
+	if (mostraArvore)
+		PrintNodo("", RETROCEDE);
+}
+
+void DeclVar()
+{
+	if (mostraArvore)
+		PrintNodo("<DeclVar>", AVANCA);
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat == PR && tk.codigo == VOID)
+	{
+		if (mostraArvore)
+			PrintNodo("VOID", MANTEM);
+		tk.processado = TRUE;
+	}
+	else
+	{
+		Tipo();
+	}
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat == SN && tk.codigo == CIRCUNFLEXO)
+	{
+		if (mostraArvore)
+			PrintNodo("^", MANTEM);
+		tk.processado = TRUE;
+	}
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat == ID)
+	{
+		if (mostraArvore)
+			PrintNodo(tk.lexema, MANTEM);
+		tk.processado = TRUE;
+	}
+	else
+	{
+		error("identificador esperado");
+	}
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat == SN && tk.codigo == PONTO_VIRG)
+	{
+		if (mostraArvore)
+			PrintNodo(";", MANTEM);
+		tk.processado = TRUE;
+	}
+	else if (tk.cat == SN && tk.codigo == VIRG)
+	{
+		DeclListVar();
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+		if (tk.cat != SN && tk.codigo != PONTO_VIRG)
+		{
+			error("ponto e virgula esperado");
+		}
+		else
+		{
+			if (mostraArvore)
+				PrintNodo(";", MANTEM);
+			tk.processado = TRUE;
+		}
+	}
+	else if (tk.cat == SN && tk.codigo == ABRE_COL)
+	{
+		DeclArrayVar();
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+		if (tk.cat == SN && tk.codigo == VIRG)
+		{
+			DeclListVar();
+		}
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+		if (tk.cat != SN && tk.codigo != PONTO_VIRG)
+		{
+			error("ponto e virgula esperado");
+		}
+		else
+		{
+			if (mostraArvore)
+				PrintNodo(";", MANTEM);
+			tk.processado = TRUE;
+		}
+	}
+
+	if (mostraArvore)
+		PrintNodo("", RETROCEDE);
+}
+
+void SignFunc()
+{
+	if (mostraArvore)
+		PrintNodo("<SignFunc>", AVANCA);
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+
+	if (tk.cat == PR && tk.codigo == VOID)
+	{
+		if (mostraArvore)
+			PrintNodo("VOID", MANTEM);
+		tk.processado = TRUE;
+	}
+	else
+	{
+		Tipo();
+	}
+
+	tk = AnaLex(fd);
+	if (tk.cat == SN && tk.codigo == CIRCUNFLEXO)
+	{
+		if (mostraArvore)
+			PrintNodo("^", MANTEM);
+		tk.processado = TRUE;
+	}
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat != ID)
+	{
+		error("identificador esperado");
+	}
+	else
+	{
+		if (mostraArvore)
+			PrintNodo(tk.lexema, MANTEM);
+		tk.processado = TRUE;
+	}
+
+	tk = AnaLex(fd);
+	if (tk.cat == SN && tk.codigo == ABRE_PAR)
+	{
+		if (mostraArvore)
+			PrintNodo("(", MANTEM);
+		tk.processado = TRUE;
+
+		TiposParam();
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+
+		if (tk.cat == SN && tk.codigo == FECHA_PAR)
+		{
+			if (mostraArvore)
+				PrintNodo(")", MANTEM);
+			tk.processado = TRUE;
+		}
+		else
+		{
+			error("fechamento de parenteses esperado");
+		}
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+		if (tk.cat != SN && tk.codigo != PONTO_VIRG)
+		{
+			error("ponto e virgula esperado");
+		}
+		else
+		{
+			if (mostraArvore)
+				PrintNodo(";", MANTEM);
+			tk.processado = TRUE;
+		}
+	}
+	else
+	{
+		error("abre parenteses esperado");
 	}
 
 	if (mostraArvore)
@@ -432,7 +611,7 @@ void MethSec()
 	// sequencia de func_prot depois do dois pontos
 	while (tk.cat == PR && (tk.codigo == VOID || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == FLOAT || tk.codigo == BOOL))
 	{
-		DeclVarFunc();
+		SignFunc();
 
 		// token apos ponto e virgula
 		if (tk.processado)
@@ -482,7 +661,7 @@ void MethSec()
 	// sequencia de func_prot depois do dois pontos
 	while (tk.cat == PR && (tk.codigo == VOID || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == FLOAT || tk.codigo == BOOL))
 	{
-		DeclVarFunc();
+		SignFunc();
 
 		// token apos ponto e virgula
 		if (tk.processado)
