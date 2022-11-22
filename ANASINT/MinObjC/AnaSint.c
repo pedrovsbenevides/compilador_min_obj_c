@@ -858,10 +858,10 @@ void Func()
 			}
 		}
 
-		// while (tk.cat == PR || tk.cat == SN || tk.cat == ID)
-		// {
-		// 	Cmd();
-		// }
+		while (tk.cat != SN && tk.codigo != FECHA_CHAVE)
+		{
+			Cmd();
+		}
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -879,6 +879,24 @@ void Func()
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
+}
+
+void Cmd()
+{
+	Atrib();
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat != SN && tk.codigo != PONTO_VIRG)
+	{
+		error("ponto e virgula esperado");
+	}
+	else
+	{
+		if (mostraArvore)
+			PrintNodo(";", MANTEM);
+		tk.processado = TRUE;
+	}
 }
 
 void TiposParam()
@@ -1092,19 +1110,17 @@ void Atrib()
 	if (mostraArvore)
 		PrintNodo("<Atrib>", AVANCA);
 
-	// if (tk.processado)
-	tk = AnaLex(fd);
+	if (tk.processado)
+		tk = AnaLex(fd);
 	if (tk.cat == ID)
 	{
+		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 	}
-	else
-	{
-		error("Identificador esperado!");
-	}
 
-	tk = AnaLex(fd);
+	if (tk.processado)
+		tk = AnaLex(fd);
 	if (tk.cat == SN)
 	{
 		if (tk.codigo == ABRE_COL)
@@ -1209,8 +1225,105 @@ void Expr()
 
 	if (mostraArvore)
 		PrintNodo("<Expr>", AVANCA);
+
+	ExprSimp();
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat == OP_LOGIC)
+	{
+		OpRel();
+		ExprSimp();
+	}
+
+	if (mostraArvore)
+		PrintNodo("", RETROCEDE);
+}
+
+void ExprSimp()
+{
+	if (mostraArvore)
+		PrintNodo("<ExprSimp>", AVANCA);
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.cat == OP_ARIT && (tk.codigo == ADICAO || tk.codigo == SUBTRACAO))
+	{
+		tk.processado = TRUE;
+		if (mostraArvore)
+		{
+			if (tk.codigo == ADICAO)
+				PrintNodo("+", MANTEM);
+			else
+				PrintNodo("-", MANTEM);
+		}
+	}
+
 	Termo();
-	Resto();
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	while ((tk.cat == OP_ARIT && (tk.codigo == ADICAO || tk.codigo == SUBTRACAO)) || (tk.cat == OP_LOGIC && tk.codigo == OU_LOGIC))
+	{
+		tk.processado = TRUE;
+		if (mostraArvore)
+		{
+			if (tk.codigo == ADICAO)
+				PrintNodo("+", MANTEM);
+			else if (tk.codigo == SUBTRACAO)
+				PrintNodo("-", MANTEM);
+			else
+				PrintNodo("||", MANTEM);
+		}
+
+		Termo();
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+	}
+
+	if (mostraArvore)
+		PrintNodo("", RETROCEDE);
+}
+
+void OpRel()
+{
+	if (mostraArvore)
+		PrintNodo("<OpRel>", AVANCA);
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	if (tk.codigo == IGUAL_A)
+	{
+		if (mostraArvore)
+			PrintNodo("==", MANTEM);
+	}
+	else if (tk.codigo == DIFERENTE)
+	{
+		if (mostraArvore)
+			PrintNodo("!=", MANTEM);
+	}
+	else if (tk.codigo == MAIOR_QUE)
+	{
+		if (mostraArvore)
+			PrintNodo(">", MANTEM);
+	}
+	else if (tk.codigo == MENOR_QUE)
+	{
+		if (mostraArvore)
+			PrintNodo("<", MANTEM);
+	}
+	else if (tk.codigo == MAIOR_IGUAL)
+	{
+		if (mostraArvore)
+			PrintNodo(">=", MANTEM);
+	}
+	else if (tk.codigo == MENOR_IGUAL)
+	{
+		if (mostraArvore)
+			PrintNodo("<=", MANTEM);
+	}
+
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
 }
@@ -1220,8 +1333,30 @@ void Termo()
 
 	if (mostraArvore)
 		PrintNodo("<Termo>", AVANCA);
+
 	Fator();
-	Sobra();
+
+	if (tk.processado)
+		tk = AnaLex(fd);
+	while ((tk.cat == OP_ARIT && (tk.codigo == MULTIPLIC || tk.codigo == DIVISAO)) || (tk.cat == OP_LOGIC && tk.codigo == E_LOGIC))
+	{
+		tk.processado = TRUE;
+		if (mostraArvore)
+		{
+			if (tk.codigo == MULTIPLIC)
+				PrintNodo("*", MANTEM);
+			else if (tk.codigo == DIVISAO)
+				PrintNodo("/", MANTEM);
+			else
+				PrintNodo("&&", MANTEM);
+		}
+
+		Fator();
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+	}
+
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
 }
@@ -1285,28 +1420,36 @@ void Fator()
 
 	if (mostraArvore)
 		PrintNodo("<Fator>", AVANCA);
+
 	if (tk.processado)
 		tk = AnaLex(fd);
-	if (tk.cat == ID)
-	{
-		tk.processado = TRUE;
-		if (mostraArvore)
-			PrintNodo(tk.lexema, MANTEM);
-		/*TRATAR IDENTIFICADOR*/
-	}
-	else if (tk.cat == CT_I)
+	if (tk.cat == CT_I)
 	{
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodoInt(tk.valInt, MANTEM);
 		/*TRATAR CONSTANTE INTEIRA*/
 	}
+	else if (tk.cat == CT_F)
+	{
+		tk.processado = TRUE;
+		if (mostraArvore)
+			PrintNodoInt(tk.valFloat, MANTEM);
+	}
+	else if (tk.cat == CT_C)
+	{
+		tk.processado = TRUE;
+		if (mostraArvore)
+			PrintNodoInt(tk.caracter, MANTEM);
+	}
 	else if (tk.cat == SN && tk.codigo == ABRE_PAR)
 	{
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodo("(", MANTEM);
+
 		Expr();
+
 		if (tk.cat != SN || tk.codigo != FECHA_PAR)
 		{
 			error("Fecha parenteses esperado!");
@@ -1318,10 +1461,131 @@ void Fator()
 				PrintNodo(")", MANTEM);
 		}
 	}
+	else if (tk.cat == OP_LOGIC && tk.codigo == NEGACAO)
+	{
+		tk.processado = TRUE;
+		if (mostraArvore)
+			PrintNodo("!", MANTEM);
+
+		Fator();
+	}
 	else
 	{
-		error("Identificador, constante inteira ou abre parenteses esperado!");
+		if (tk.cat == SN && tk.codigo == CIRCUNFLEXO)
+		{
+			if (mostraArvore)
+				PrintNodo("^", MANTEM);
+			tk.processado = TRUE;
+		}
+
+		if (tk.processado)
+			tk = AnaLex(fd);
+		if (tk.cat == ID)
+		{
+			tk.processado = TRUE;
+			if (mostraArvore)
+				PrintNodo(tk.lexema, MANTEM);
+			/*TRATAR IDENTIFICADOR*/
+
+			tk = AnaLex(fd);
+			if (tk.cat == SN && tk.codigo == PONTO)
+			{
+				tk.processado = TRUE;
+				if (mostraArvore)
+					PrintNodo(".", MANTEM);
+
+				tk = AnaLex(fd);
+				if (tk.cat == ID)
+				{
+					tk.processado = TRUE;
+					if (mostraArvore)
+						PrintNodo(tk.lexema, MANTEM);
+
+					tk = AnaLex(fd);
+					if (tk.cat == SN && tk.codigo == ABRE_PAR)
+					{
+						tk.processado = TRUE;
+						if (mostraArvore)
+							PrintNodo("(", MANTEM);
+
+						if (tk.cat != SN || tk.codigo != FECHA_PAR)
+						{
+							Expr();
+
+							if (tk.processado)
+								tk = AnaLex(fd);
+							while (tk.cat == SN && tk.codigo == VIRG)
+							{
+								tk.processado = TRUE;
+								if (mostraArvore)
+									PrintNodo(",", MANTEM);
+
+								Expr();
+
+								if (tk.processado)
+									tk = AnaLex(fd);
+							}
+						}
+						else
+						{
+							tk.processado = TRUE;
+							if (mostraArvore)
+								PrintNodo(")", MANTEM);
+						}
+					}
+					else if (tk.cat == SN && tk.codigo == ABRE_COL)
+					{
+						tk.processado = TRUE;
+						if (mostraArvore)
+							PrintNodo("[", MANTEM);
+
+						Expr();
+
+						tk = AnaLex(fd);
+						if (tk.cat == SN && tk.codigo == FECHA_COL)
+						{
+							tk.processado = TRUE;
+							if (mostraArvore)
+								PrintNodo("]", MANTEM);
+						}
+						else
+						{
+							error("fechamento de colchetes esperado");
+						}
+					}
+				}
+				else
+				{
+					error("identificador esperado");
+				}
+			}
+			else if (tk.cat == SN && tk.codigo == ABRE_COL)
+			{
+				tk.processado = TRUE;
+				if (mostraArvore)
+					PrintNodo("[", MANTEM);
+
+				Expr();
+
+				tk = AnaLex(fd);
+				if (tk.cat == SN && tk.codigo == FECHA_COL)
+				{
+					tk.processado = TRUE;
+					if (mostraArvore)
+						PrintNodo("]", MANTEM);
+				}
+				else
+				{
+					error("fechamento de colchetes esperado");
+				}
+			}
+		}
+		else
+		{
+			error("identificador esperado");
+		}
 	}
+
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
 }

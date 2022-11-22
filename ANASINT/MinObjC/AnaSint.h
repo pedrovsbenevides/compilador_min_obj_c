@@ -29,9 +29,11 @@ void TiposParam();
 void Atrib();
 void Tipo();
 void Expr();
+void ExprSimp();
+void OpRel();
+void Fator();
 void Termo();
 void Resto();
 void Sobra();
-void Fator();
 
 #endif // ANASINT
