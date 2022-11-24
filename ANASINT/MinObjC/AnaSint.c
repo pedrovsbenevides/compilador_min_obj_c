@@ -858,9 +858,14 @@ void Func()
 			}
 		}
 
+		if (tk.processado)
+			tk = AnaLex(fd);
 		while (tk.cat != SN && tk.codigo != FECHA_CHAVE)
 		{
 			Cmd();
+
+			if (tk.processado)
+				tk = AnaLex(fd);
 		}
 
 		if (tk.processado)
@@ -1005,7 +1010,7 @@ void Cmd()
 					tk = AnaLex(fd);
 				if (tk.cat != SN && tk.codigo != FECHA_PAR)
 				{
-					Atrib(1);
+					Atrib();
 				}
 
 				if (tk.processado)
@@ -1242,7 +1247,79 @@ void Cmd()
 			PrintNodo(tk.lexema, MANTEM);
 
 		tk = AnaLex(fd);
-		if (tk.cat == SN && tk.codigo == ABRE_PAR)
+		if (tk.cat == SN && tk.codigo == PONTO)
+		{
+			tk.processado = TRUE;
+			if (mostraArvore)
+				PrintNodo(".", MANTEM);
+
+			tk = AnaLex(fd);
+			if (tk.cat == ID)
+			{
+				tk.processado = TRUE;
+				if (mostraArvore)
+					PrintNodo(tk.lexema, MANTEM);
+
+				tk = AnaLex(fd);
+				if (tk.cat == SN && tk.codigo == ABRE_PAR)
+				{
+					tk.processado = TRUE;
+					if (mostraArvore)
+						PrintNodo("(", MANTEM);
+
+					tk = AnaLex(fd);
+					if (tk.cat != SN || tk.codigo != FECHA_PAR)
+					{
+						Expr();
+
+						if (tk.processado)
+							tk = AnaLex(fd);
+						while (tk.cat == SN && tk.codigo == VIRG)
+						{
+							tk.processado = TRUE;
+							if (mostraArvore)
+								PrintNodo(",", MANTEM);
+
+							Expr();
+
+							if (tk.processado)
+								tk = AnaLex(fd);
+						}
+					}
+
+					if (tk.processado)
+						tk = AnaLex(fd);
+					if (tk.cat == SN && tk.codigo == FECHA_PAR)
+					{
+						tk.processado = TRUE;
+						if (mostraArvore)
+							PrintNodo(")", MANTEM);
+					}
+					else
+					{
+						error("fechamento de parenteses esperado");
+					}
+
+					if (tk.processado)
+						tk = AnaLex(fd);
+					if (tk.cat == SN && tk.codigo == PONTO_VIRG)
+					{
+						tk.processado = TRUE;
+						if (mostraArvore)
+							PrintNodo(";", MANTEM);
+					}
+					else
+					{
+						error("ponto e virgula esperado");
+					}
+				}
+			}
+			else
+			{
+				error("identificador esperado");
+			}
+		}
+		else if (tk.cat == SN && tk.codigo == ABRE_PAR)
 		{
 			tk.processado = TRUE;
 			if (mostraArvore)
