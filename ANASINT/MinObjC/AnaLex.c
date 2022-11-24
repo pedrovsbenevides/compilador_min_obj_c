@@ -70,7 +70,7 @@ TOKEN AnaLex(FILE *fd)
                 lexema[++tamL] = '\0';
             }
 
-            else if (c >= '1' && c <= '9')
+            else if (c >= '0' && c <= '9')
             {
                 // inicio de constante inteira - inicializa digitos
 
