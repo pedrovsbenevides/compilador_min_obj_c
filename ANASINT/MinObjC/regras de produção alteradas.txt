@@ -9,4 +9,5 @@ sign_func ::= (tipo | void) [^]id '(' tipos_param')' ';'
 func_prot ::=  [::] '(' tipos_param')' (';'|func|decl_list_func)
 func ::= '{' decl_var { cmd } '}'
 decl_list_func ::= { ',' [^]id '(' tipos_param')' }
-
+rest_atrib ::= [ '[' expr ']' ] = (expr | new tipo)
+cmd ::= ...|id rest_atrib ';'

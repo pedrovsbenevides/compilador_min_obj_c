@@ -25,6 +25,7 @@ void MethSec();
 void FuncProt();
 void Func();
 void Cmd();
+void RestAtrib();
 void TiposParam();
 void Atrib();
 void Tipo();
@@ -33,7 +34,5 @@ void ExprSimp();
 void OpRel();
 void Fator();
 void Termo();
-void Resto();
-void Sobra();
 
 #endif // ANASINT

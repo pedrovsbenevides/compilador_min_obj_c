@@ -1,29 +1,19 @@
-void x;
-int ^d;
-char s[4];
-float ^a[5];
-bool t;
-
-void func1(int x), func2(int x);
-int func3(int ^y), func4(int ^y);
-char func5(float z[]), func6(float z[]);
-float func7(char s[]), func8(char s[]);
-bool func9(bool b), func10(bool b);
-
-void func11(float x, bool y) {
-    int x[2], ^l;
-    char y, j;
-    bool z, k;
-    float ^w, h;
-    void ^f[2], g;
+class a {
+data: int ^i, ^a[10];
+code: void ^k(int ^i,char u[]); int j(); intern: char o(); bool p();
 }
 
-int ^IdEscopo::funcEscoped(int j[], char ^k ) {
-    int x[2], ^l;
-    char y, j;
-    bool z, k;
-    float ^w, h;
-    void ^f[2], g;
+int as;
+
+float kk(){
+  float b;
+    if(as!= b) {
+        ;
+    }
+  while(a>i) {
+        delete a;
+        for(;;) {
+            return a;
+        }
+    }
 }
-
-
