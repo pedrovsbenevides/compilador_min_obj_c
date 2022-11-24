@@ -1,4 +1,4 @@
-// Autores: Pedro Victor Santana Benevides e Rafael Roberto Coutinho da Cruz
+// Alunos: Pedro Victor Santana Benevides e Rafael Roberto Coutinho da Cruz
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,12 +7,16 @@
 #include "AnaLex.h"
 #include "AnaSint.h"
 #include "FuncAux.h"
+#include "TypeTable.h"
+#include "SimbTable.h"
 
 /* Variaveis globais */
 TOKEN tk;
 FILE *fd;
 enum BOOL mostraArvore = TRUE;
 char TABS[200] = "";
+char TYPES[50][50]; //tabela de tipos
+SIMBOLO SIMB[100]; //tabela de simbolos
 
 void TestaAnalex()
 {
