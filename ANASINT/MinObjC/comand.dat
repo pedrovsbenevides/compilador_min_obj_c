@@ -1,19 +1,70 @@
-class a {
-data: int ^i, ^a[10];
-code: void ^k(int ^i,char u[]); int j(); intern: char o(); bool p();
+class ObjDef {
+    data: int x[2], ^l;
+    char y, j;
+    bool z, k;
+    float ^w, h;
+    void ^f[2], g;
+    
+    code: void func1(int &^f);
+    int ^func2(int &^x);
+    char func3(char ^x);
+    float ^func4(int &^x);
+    bool func5(char &x);
+    float ^func6(bool ^x[]);
+    float func7(bool x[]);
+    void ^func8(float x, int ^y, char &z, int &^w, float k[], char^k[]);
+
+    intern: void func10();
+    int ^func20(int &^x);
+    char func30(int ^x);
+    float ^func40(char &^x);
+    bool func50(char &x);
+    float ^func60(bool ^x[]);
+    float func70(bool x[]);
+    void ^func80(float x, float ^y, int &z, bool &^w, int u[], char ^k[]);
 }
 
-int as;
+void x;
+int ^d;
+char s[50];
+float ^a[15];
+bool t;
 
-float kk(){
-  float b;
-    if(as!= b) {
-        ;
+void func1(int &^x), func2(float ^y);
+int func3(bool x[]), func4(char &x);
+char func5(float x), func6(int &z);
+float func7(int u[]), func8(char ^k[]);
+bool func9(int &^w), func10();
+
+void func11() {
+    void x;
+    int ^d;
+    char s[10];
+    float ^a[2];
+    bool t;
+    
+    if(as!=b){
+    return as;
+  }
+}
+
+int ^IdEscopo::funcEscoped(int b, int c) {
+    void x;
+    int ^d;
+    char s[5];
+    float ^a[4];
+    bool t;
+
+    while(a>i) {
+      delete a;
     }
-  while(a>i) {
-        delete a;
-        for(;;) {
-            return a;
-        }
+
+    for(i=0;i+1;i=10){
+      if(i/2 != 1){
+        return i;
+      } else {
+        ObjDef.func1(i);
+      }
     }
+    
 }
