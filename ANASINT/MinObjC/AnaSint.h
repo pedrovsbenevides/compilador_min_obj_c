@@ -6,7 +6,8 @@
 
 /* Variaveis globais */
 extern TOKEN tk;
-extern FILE *fd;
+extern FILE *fd, *fd_out;
+extern int countLabels;
 
 extern enum BOOL mostraArvore;
 extern char TABS[200];

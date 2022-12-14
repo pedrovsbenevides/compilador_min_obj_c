@@ -59,6 +59,7 @@ int insertSimb(SIMBOLO simb)
 {
     countSimbs++;
 
+    simb.enderecoRel = countSimbs;
     SIMB[countSimbs] = simb;
 
     return countSimbs;

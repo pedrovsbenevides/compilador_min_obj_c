@@ -27,6 +27,7 @@ enum BOOL mostraArvore = TRUE;
 char TABS[200] = "";
 SIMBOLO TYPES[100]; // tabela de tipos
 SIMBOLO SIMB[100];  // tabela de simbolos
+int countLabels = 0;
 
 void Analex()
 {
@@ -283,7 +284,7 @@ void Anasint()
         error("Arquivo de entrada de comandos nao encontrado!");
 
     if ((fd_out = fopen("expressao.obj", "w")) == NULL)
-        erro("Arquivo de saida do codigo gerado nao pode ser criado!");
+        error("Arquivo de saida do codigo gerado nao pode ser criado!");
 
     Prog();
 

@@ -1580,6 +1580,12 @@ void Cmd()
 
 void RestAtrib()
 {
+	char cmdObj[20];
+	int simb = findSimb(tk.lexema);
+
+	sprintf(cmdObj, "LOAD %d\n", SIMB[simb].enderecoRel);
+	fputs(cmdObj, fd_out);
+
 	if (mostraArvore)
 		PrintNodo("<RestAtrib>", AVANCA);
 
@@ -1628,6 +1634,9 @@ void RestAtrib()
 	{
 		Expr();
 	}
+
+	sprintf(cmdObj, "STOR %d\n", SIMB[simb].enderecoRel);
+	fputs(cmdObj, fd_out);
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
@@ -1959,6 +1968,8 @@ void TiposParam()
 
 void Atrib()
 {
+	int simb;
+	char cmdObj[20];
 
 	if (mostraArvore)
 		PrintNodo("<Atrib>", AVANCA);
@@ -1970,6 +1981,12 @@ void Atrib()
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
+		simb = findSimb(tk.lexema);
+
+		if (!simb)
+		{
+			error("identificador nao declarado");
+		}
 	}
 	else
 	{
@@ -2020,6 +2037,9 @@ void Atrib()
 	{
 		Expr();
 	}
+
+	sprintf(cmdObj, "STOR %d\n", SIMB[simb].enderecoRel);
+	fputs(cmdObj, fd_out);
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
@@ -2108,6 +2128,10 @@ void Expr()
 
 void ExprSimp()
 {
+	int temOu = FALSE;
+	char cmdObj[20];
+	int operacao;
+
 	if (mostraArvore)
 		PrintNodo("<ExprSimp>", AVANCA);
 
@@ -2116,6 +2140,7 @@ void ExprSimp()
 	if (tk.cat == OP_ARIT && (tk.codigo == ADICAO || tk.codigo == SUBTRACAO))
 	{
 		tk.processado = TRUE;
+		operacao = tk.codigo;
 		if (mostraArvore)
 		{
 			if (tk.codigo == ADICAO)
@@ -2127,11 +2152,17 @@ void ExprSimp()
 
 	Termo();
 
+	if (operacao == ADICAO)
+		fputs("ADD\n", fd_out);
+	else if (operacao == SUBTRACAO)
+		fputs("SUB\n", fd_out);
+
 	if (tk.processado)
 		tk = AnaLex(fd);
 	while ((tk.cat == OP_ARIT && (tk.codigo == ADICAO || tk.codigo == SUBTRACAO)) || (tk.cat == OP_LOGIC && tk.codigo == OU_LOGIC))
 	{
 		tk.processado = TRUE;
+		operacao = tk.codigo;
 		if (mostraArvore)
 		{
 			if (tk.codigo == ADICAO)
@@ -2139,13 +2170,34 @@ void ExprSimp()
 			else if (tk.codigo == SUBTRACAO)
 				PrintNodo("-", MANTEM);
 			else
+			{
 				PrintNodo("||", MANTEM);
+				temOu = TRUE;
+			}
 		}
 
 		Termo();
 
+		if (operacao == ADICAO)
+			fputs("ADD\n", fd_out);
+		else if (operacao == SUBTRACAO)
+			fputs("SUB\n", fd_out);
+		else
+		{
+			sprintf(cmdObj, "COPY \n");
+			sprintf(cmdObj, "GOTRUE L%d\n", countLabels);
+			sprintf(cmdObj, "POP \n");
+			fputs(cmdObj, fd_out);
+		}
+
 		if (tk.processado)
 			tk = AnaLex(fd);
+	}
+	if (temOu)
+	{
+		sprintf(cmdObj, "LABEL L%d\n", countLabels);
+		fputs(cmdObj, fd_out);
+		countLabels++;
 	}
 
 	if (mostraArvore)
@@ -2202,6 +2254,9 @@ void OpRel()
 
 void Termo()
 {
+	int temE = FALSE;
+	char cmdObj[20];
+	int operacao;
 
 	if (mostraArvore)
 		PrintNodo("<Termo>", AVANCA);
@@ -2213,6 +2268,7 @@ void Termo()
 	while ((tk.cat == OP_ARIT && (tk.codigo == MULTIPLIC || tk.codigo == DIVISAO)) || (tk.cat == OP_LOGIC && tk.codigo == E_LOGIC))
 	{
 		tk.processado = TRUE;
+		operacao = tk.codigo;
 		if (mostraArvore)
 		{
 			if (tk.codigo == MULTIPLIC)
@@ -2225,8 +2281,27 @@ void Termo()
 
 		Fator();
 
+		if (operacao == MULTIPLIC)
+			fputs("MUL\n", fd_out);
+		else if (operacao == DIVISAO)
+			fputs("DIV\n", fd_out);
+		else
+		{
+			sprintf(cmdObj, "COPY \n");
+			sprintf(cmdObj, "GOFALSE L%d\n", countLabels);
+			sprintf(cmdObj, "POP \n");
+			fputs(cmdObj, fd_out);
+		}
+
 		if (tk.processado)
 			tk = AnaLex(fd);
+	}
+
+	if (temE)
+	{
+		sprintf(cmdObj, "LABEL L%d\n", countLabels);
+		fputs(cmdObj, fd_out);
+		countLabels++;
 	}
 
 	if (mostraArvore)
@@ -2235,6 +2310,7 @@ void Termo()
 
 void Fator()
 {
+	char cmdObj[20];
 
 	if (mostraArvore)
 		PrintNodo("<Fator>", AVANCA);
@@ -2246,19 +2322,27 @@ void Fator()
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodoInt(tk.valInt, MANTEM);
-		/*TRATAR CONSTANTE INTEIRA*/
+
+		sprintf(cmdObj, "PUSH %d\n", tk.valInt);
+		fputs(cmdObj, fd_out);
 	}
 	else if (tk.cat == CT_F)
 	{
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodoInt(tk.valFloat, MANTEM);
+
+		sprintf(cmdObj, "PUSH %d\n", tk.valFloat);
+		fputs(cmdObj, fd_out);
 	}
 	else if (tk.cat == CT_C)
 	{
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodoInt(tk.caracter, MANTEM);
+
+		sprintf(cmdObj, "PUSH %d\n", tk.caracter);
+		fputs(cmdObj, fd_out);
 	}
 	else if (tk.cat == SN && tk.codigo == ABRE_PAR)
 	{

@@ -1,8 +1,5 @@
-int ^x;
-void main(int x, int x) {
-  delete x;
-}
-
-void soma(int x) {
-  delete x;
+int x;
+void main() {
+  x = ((2 + 3) * 7 / 3 - (4 + 5)) *   3 / 2;
+  x = x + 5;
 }
