@@ -7,34 +7,35 @@
 #include "TypeTable.h"
 #include "SimbTable.h"
 
-SIMBOLO findSimb(char lexema[])
+static int countSimbs = 0;
+
+int findSimb(char lexema[])
 {
-    for (int i = 0; i <= sizeof(SIMB); i++)
+    for (int i = countSimbs; i >= 0; i--)
     {
         if (strcmp(lexema, SIMB[i].lexema) == 0)
         {
-            return SIMB[i];
+            return i;
         }
     }
+    return 0;
 }
 
 // verificação de escopo, global ou local
-int compEsc(int escopo)
+int compEsc(int escopo, int simbIdx)
 {
-    for (int i = 0; i <= sizeof(SIMB); i++)
+    if (SIMB[simbIdx].escopo == escopo)
     {
-        if (SIMB[i].escopo == escopo)
-        {
-            return 1;
-        }
+        return 1;
     }
+
     return 0;
 }
 
 // verificação de contexto
 int compCntx(int contexto)
 {
-    for (int i = 0; i <= sizeof(SIMB); i++)
+    for (int i = countSimbs; i >= 0; i--)
     {
         if (SIMB[i].papel == contexto)
         {
@@ -46,7 +47,7 @@ int compCntx(int contexto)
 
 int compTipo(int tipo)
 {
-    for (int i = 0; i <= sizeof(SIMB); i++)
+    for (int i = countSimbs; i >= 0; i--)
     {
         if (SIMB[i].tipo == tipo)
         {
@@ -57,11 +58,16 @@ int compTipo(int tipo)
 }
 
 // inserir
-void insertSimb(SIMBOLO simb)
+int insertSimb(SIMBOLO simb)
 {
-    static int countSimbs = 0;
+    countSimbs++;
 
     SIMB[countSimbs] = simb;
 
-    countSimbs++;
+    return countSimbs;
+}
+
+void setIsArray(int simbIdx)
+{
+    SIMB[simbIdx].array = TRUE;
 }

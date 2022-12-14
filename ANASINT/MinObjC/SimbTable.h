@@ -19,46 +19,48 @@ typedef
 
     struct
 {
+    char lexema[TAM_MAX_LEXEMA]; // cadeia de caractares que corresponde o nome
+                                 // do token da cat. ID
+    enum ESCOPO escopo;          // escopo do identificador
+
+    enum PAPEL papel; // papel desempenhado pelo identificador, contexto em que
+                      // esta inserido
+
+    int enderecoRel; // endereço relativo
+
+    int idx; // indice na tabela de simbolos
+
+    int deslocamento; // deslocamento na maq de pilha
+
+    int ponteiro; // indicador de se identificador é ponteiro ou não;
+
+    int array; // indicador de se identificador é array ou não;
     union
     {
-        char lexema[TAM_MAX_LEXEMA]; // cadeia de caractares que corresponde o nome
-                                     // do token da cat. ID
-
-        enum PAL_RESERV tipo; // para identificadores com tipos padrao
-
-        char tipo_def[TAM_MAX_LEXEMA]; // para identificadores com tipos definidos
-                                       // pelo usuario, o tipo é o proprio lexema
-
-        enum ESCOPO escopo; // escopo do identificador
-
-        enum PAPEL papel; // papel desempenhado pelo identificador, contexto em que
-                          // esta inserido
-
-        int indice; // indica o índice on de foi guardado na tabela de simbolos
-
         int valInt; // valor caso tipo INT/BOOL
 
         float valFloat; // valor caso tipo FLOAT
 
         char caracter; // valor caso tipo CHAR
+    };
 
-        int ponteiro; // indicador de se identificador é ponteiro ou não;
+    union
+    {
+        enum PAL_RESERV tipo; // para identificadores com tipos padrao
 
-        int enderecoRel; // endereço relativo
-
-        int idx; // indice na tabela de simbolos
-
-        int deslocamento; // deslocamento na maq de pilha
+        char tipo_def[TAM_MAX_LEXEMA]; // para identificadores com tipos definidos
+                                       // pelo usuario, o tipo é o proprio lexema
     };
 
 } SIMBOLO; // Tipo SIMBOLO
 
 extern SIMBOLO SIMB[100]; // tabela de simbolos
 
-SIMBOLO findSimb(char lexema[]);
-int compEsc(int escopo);
+int findSimb(char lexema[]);
+int compEsc(int escopo, int simbIdx);
 int compCntx(int contexto);
 int compTipo(int tipo);
-void insertSimb(SIMBOLO simb);
+int insertSimb(SIMBOLO simb);
+void setIsArray(int simbIdx);
 
 #endif

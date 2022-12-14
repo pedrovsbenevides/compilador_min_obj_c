@@ -1,4 +1,14 @@
-// Alunos: Pedro Victor Santana Benevides e Rafael Roberto Coutinho da Cruz
+// Alunos: Pedro Victor Santana Benevides
+// Este Modulo do projeto vem com a implementação do analisador sintatico (AnaSint.h e AnaSint.c)
+// tabelas de simbolos e de tipos (TypeTable.h, TypeTable.h e SimbTable.h e SimbTable.c)
+// funcoes auxiliares (FuncAux.h e FuncAux.c)
+// arquivo com comandos em MinObjC para teste (comand.dat)
+// executavel estavel gerado (AnaSint.exe)
+// regras de produção que foram alteradas dando origem a novos terminais que foram utilizados. disponivel em formato txt e pdf
+
+// Para gerar um novo executavel 1.Abra o terminal na pasta MinObjC
+// 2.Digite o comando => gcc MinObjC.c AnaLex.c AnaSint.c FuncAux.c TypeTable.c SimbTable.c
+// 3.Rode o executavel no terminal com .\"nome do executavel gerado".exe
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,8 +25,8 @@ TOKEN tk;
 FILE *fd;
 enum BOOL mostraArvore = TRUE;
 char TABS[200] = "";
-char TYPES[50][50]; //tabela de tipos
-SIMBOLO SIMB[100]; //tabela de simbolos
+SIMBOLO TYPES[100]; // tabela de tipos
+SIMBOLO SIMB[100];  // tabela de simbolos
 
 void TestaAnalex()
 {

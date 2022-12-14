@@ -4,6 +4,15 @@
 #include "AnaLex.h"
 #include "AnaSint.h"
 #include "FuncAux.h"
+#include "TypeTable.h"
+#include "SimbTable.h"
+
+#define GLOBAL 1;
+#define LOCAL 2;
+
+char tipoTabSimb;
+int escopo_atual = GLOBAL;
+
 void Prog()
 {
 	if (mostraArvore)
@@ -47,9 +56,28 @@ void ObjDef()
 	// identificador de classe
 	if (tk.cat == ID)
 	{
+		SIMBOLO newType;
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
+
+		int checkSimb = findSimb(tk.lexema);
+		if (checkSimb)
+		{
+			if (compEsc(escopo_atual, checkSimb))
+			{
+				error("Redeclaracao de identificador");
+			}
+		}
+		else
+		{
+			newType.papel = OBJ;
+			newType.escopo = escopo_atual;
+			strcpy(newType.tipo_def, tk.lexema);
+			strcpy(newType.lexema, tk.lexema);
+
+			insertSimb(newType);
+		}
 	}
 	else
 	{
@@ -63,6 +91,7 @@ void ObjDef()
 	}
 	if (tk.cat == SN && tk.codigo == ABRE_CHAVE)
 	{
+		escopo_atual = LOCAL;
 		if (mostraArvore)
 			PrintNodo("{", MANTEM);
 		tk.processado = TRUE;
@@ -78,6 +107,7 @@ void ObjDef()
 			if (mostraArvore)
 				PrintNodo("}", MANTEM);
 			tk.processado = TRUE;
+			escopo_atual = GLOBAL;
 		}
 		else
 		{
@@ -127,37 +157,11 @@ void DataSec()
 		// declaracao de variaveis da classe
 		DeclVar();
 
-		// ponto e virgula esperado
-		// if (tk.processado)
-		// {
-		// 	tk = AnaLex(fd);
-		// }
-		// if (tk.cat != SN && tk.codigo != PONTO_VIRG)
-		// {
-		// 	error("ponto e virgula esperado");
-		// }
-		// else
-		// {
-		// 	if (mostraArvore)
-		// 		PrintNodo(";", MANTEM);
-		// 	tk.processado = TRUE;
-		// }
-
 		// sequencia de declListVar depois do ponto e virgula
 		tk = AnaLex(fd);
 		while (tk.cat == PR && (tk.codigo == VOID || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == FLOAT || tk.codigo == BOOL))
 		{
 			DeclVar();
-			// if (tk.cat != SN && tk.codigo != PONTO_VIRG)
-			// {
-			// 	error("ponto e virgula esperado");
-			// }
-			// else
-			// {
-			// 	if (mostraArvore)
-			// 		PrintNodo(";", MANTEM);
-			// 	tk.processado = TRUE;
-			// }
 
 			// token apos ponto e virgula
 			if (tk.processado)
@@ -181,6 +185,12 @@ void DataSec()
 
 void DeclVar()
 {
+	SIMBOLO newSimb;
+	int newSimbIdx;
+	int newSimbType;
+	newSimb.ponteiro = FALSE;
+	newSimb.array = FALSE;
+
 	if (mostraArvore)
 		PrintNodo("<DeclVar>", AVANCA);
 
@@ -191,10 +201,25 @@ void DeclVar()
 		if (mostraArvore)
 			PrintNodo("VOID", MANTEM);
 		tk.processado = TRUE;
+		newSimb.tipo = VOID;
 	}
 	else
 	{
-		Tipo();
+		switch (Tipo())
+		{
+		case 'i':
+			newSimbType = INT;
+			break;
+		case 'f':
+			newSimbType = FLOAT;
+			break;
+		case 'c':
+			newSimbType = CHAR;
+			break;
+		case 'b':
+			newSimbType = BOOL;
+			break;
+		}
 	}
 
 	if (tk.processado)
@@ -204,6 +229,7 @@ void DeclVar()
 		if (mostraArvore)
 			PrintNodo("^", MANTEM);
 		tk.processado = TRUE;
+		newSimb.ponteiro = TRUE;
 	}
 
 	if (tk.processado)
@@ -213,6 +239,26 @@ void DeclVar()
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
+
+		if (newSimb.tipo == VOID && !newSimb.ponteiro)
+		{
+			error("ERRO: Apenas ponteiros podem ter tipo VOID");
+		}
+
+		int checkSimb = findSimb(tk.lexema);
+		if (checkSimb)
+		{
+			if (compEsc(escopo_atual, checkSimb))
+			{
+				error("Redeclaracao de identificador");
+			}
+		}
+		else
+		{
+			newSimb.escopo = escopo_atual;
+			newSimb.tipo = newSimbType;
+			newSimbIdx = insertSimb(newSimb);
+		}
 	}
 	else
 	{
@@ -229,7 +275,7 @@ void DeclVar()
 	}
 	else if (tk.cat == SN && tk.codigo == VIRG)
 	{
-		DeclListVar();
+		DeclListVar(newSimbType);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -246,13 +292,13 @@ void DeclVar()
 	}
 	else if (tk.cat == SN && tk.codigo == ABRE_COL)
 	{
-		DeclArrayVar();
+		DeclArrayVar(newSimbIdx);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == VIRG)
 		{
-			DeclListVar();
+			DeclListVar(newSimbType);
 		}
 
 		if (tk.processado)
@@ -360,6 +406,12 @@ void SignFunc()
 
 void DeclVarFunc()
 {
+	SIMBOLO newSimb;
+	int newSimbIdx;
+	int newSimbType;
+	newSimb.ponteiro = FALSE;
+	newSimb.array = FALSE;
+
 	if (mostraArvore)
 		PrintNodo("<DeclVarFunc>", AVANCA);
 
@@ -370,16 +422,32 @@ void DeclVarFunc()
 		if (mostraArvore)
 			PrintNodo("VOID", MANTEM);
 		tk.processado = TRUE;
+		newSimb.tipo = VOID;
 	}
 	else
 	{
-		Tipo();
+		switch (Tipo())
+		{
+		case 'i':
+			newSimbType = INT;
+			break;
+		case 'f':
+			newSimbType = FLOAT;
+			break;
+		case 'c':
+			newSimbType = CHAR;
+			break;
+		case 'b':
+			newSimbType = BOOL;
+			break;
+		}
 	}
 
 	if (tk.processado)
 		tk = AnaLex(fd);
 	if (tk.cat == SN && tk.codigo == CIRCUNFLEXO)
 	{
+		newSimb.ponteiro = TRUE;
 		if (mostraArvore)
 			PrintNodo("^", MANTEM);
 		tk.processado = TRUE;
@@ -392,6 +460,28 @@ void DeclVarFunc()
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
+		newSimb.papel = VAR;
+		strcpy(newSimb.lexema, tk.lexema);
+
+		if (newSimb.tipo == VOID && !newSimb.ponteiro)
+		{
+			error("ERRO: Apenas ponteiros podem ter tipo VOID");
+		}
+
+		int checkSimb = findSimb(tk.lexema);
+		if (checkSimb)
+		{
+			if (compEsc(escopo_atual, checkSimb))
+			{
+				error("Redeclaracao de identificador");
+			}
+		}
+		else
+		{
+			newSimb.escopo = escopo_atual;
+			newSimb.tipo = newSimbType;
+			newSimbIdx = insertSimb(newSimb);
+		}
 	}
 	else
 	{
@@ -408,7 +498,7 @@ void DeclVarFunc()
 	}
 	else if (tk.cat == SN && tk.codigo == VIRG)
 	{
-		DeclListVar();
+		DeclListVar(newSimbType);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -425,13 +515,13 @@ void DeclVarFunc()
 	}
 	else if (tk.cat == SN && tk.codigo == ABRE_COL)
 	{
-		DeclArrayVar();
+		DeclArrayVar(newSimbIdx);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == VIRG)
 		{
-			DeclListVar();
+			DeclListVar(newSimbType);
 		}
 
 		if (tk.processado)
@@ -464,6 +554,7 @@ void DeclVarFunc()
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
 			tk.processado = TRUE;
+			// verificar de id de funcao pertence ao escopo (identificador antes dos quatro pontos)
 		}
 		else
 		{
@@ -477,7 +568,7 @@ void DeclVarFunc()
 		PrintNodo("", RETROCEDE);
 }
 
-void DeclListVar()
+void DeclListVar(int listSimbType)
 {
 	if (mostraArvore)
 		PrintNodo("<DeclListVar>", AVANCA);
@@ -490,6 +581,12 @@ void DeclListVar()
 			PrintNodo(",", MANTEM);
 		tk.processado = TRUE;
 
+		SIMBOLO newSimb;
+		int newSimbIdx;
+		newSimb.ponteiro = FALSE;
+		newSimb.array = FALSE;
+		newSimb.tipo = listSimbType;
+
 		if (tk.processado)
 			tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == CIRCUNFLEXO)
@@ -497,6 +594,7 @@ void DeclListVar()
 			if (mostraArvore)
 				PrintNodo("^", MANTEM);
 			tk.processado = TRUE;
+			newSimb.ponteiro = TRUE;
 		}
 
 		if (tk.processado)
@@ -506,6 +604,20 @@ void DeclListVar()
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
 			tk.processado = TRUE;
+
+			int checkSimb = findSimb(tk.lexema);
+			if (checkSimb)
+			{
+				if (compEsc(escopo_atual, checkSimb))
+				{
+					error("Redeclaracao de identificador");
+				}
+				else
+				{
+					newSimb.escopo = escopo_atual;
+					newSimbIdx = insertSimb(newSimb);
+				}
+			}
 		}
 		else
 		{
@@ -516,7 +628,7 @@ void DeclListVar()
 			tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == ABRE_COL)
 		{
-			DeclArrayVar();
+			DeclArrayVar(newSimbIdx);
 		}
 
 		if (tk.processado)
@@ -527,7 +639,7 @@ void DeclListVar()
 		PrintNodo("", RETROCEDE);
 }
 
-void DeclArrayVar()
+void DeclArrayVar(int varIdx)
 {
 	if (mostraArvore)
 		PrintNodo("<DeclArrayVar>", AVANCA);
@@ -539,6 +651,7 @@ void DeclArrayVar()
 		if (mostraArvore)
 			PrintNodo("[", MANTEM);
 		tk.processado = TRUE;
+		setIsArray(varIdx);
 
 		tk = AnaLex(fd);
 		if (tk.cat != CT_I)
@@ -779,6 +892,19 @@ void DeclListFunc()
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
 			tk.processado = TRUE;
+
+			int checkSimb = findSimb(tk.lexema);
+			if (checkSimb)
+			{
+				if (compEsc(escopo_atual, checkSimb))
+				{
+					error("Redeclaracao de identificador");
+				}
+			}
+			else
+			{
+				// insertSimb(tk.lexema);
+			}
 		}
 		else
 		{
@@ -913,6 +1039,11 @@ void Cmd()
 				tk.processado = TRUE;
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
+
+				if (findSimb(tk.lexema))
+				{
+					error("Identificador não declarado");
+				}
 			}
 			else
 			{
@@ -1155,7 +1286,19 @@ void Cmd()
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
-			/*TRATAR IDENTIFICADOR*/
+
+			int checkSimb = findSimb(tk.lexema);
+			if (checkSimb)
+			{
+				if (compEsc(escopo_atual, checkSimb))
+				{
+					error("Redeclaracao de identificador");
+				}
+			}
+			else
+			{
+				// insertSimb(tk.lexema);
+			}
 
 			tk = AnaLex(fd);
 			if (tk.cat == SN && tk.codigo == PONTO)
@@ -1170,6 +1313,7 @@ void Cmd()
 					tk.processado = TRUE;
 					if (mostraArvore)
 						PrintNodo(tk.lexema, MANTEM);
+					// verificar identificador pertencente a classe
 
 					tk = AnaLex(fd);
 					if (tk.cat == SN && tk.codigo == ABRE_PAR)
@@ -1246,6 +1390,19 @@ void Cmd()
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 
+		int checkSimb = findSimb(tk.lexema);
+		if (checkSimb)
+		{
+			if (compEsc(escopo_atual, checkSimb))
+			{
+				error("Redeclaracao de identificador");
+			}
+		}
+		else
+		{
+			// insertSimb(tk.lexema);
+		}
+
 		tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == PONTO)
 		{
@@ -1259,6 +1416,7 @@ void Cmd()
 				tk.processado = TRUE;
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
+				// verificar identificador de função pertencente a classe
 
 				tk = AnaLex(fd);
 				if (tk.cat == SN && tk.codigo == ABRE_PAR)
@@ -1451,6 +1609,7 @@ void RestAtrib()
 
 void TiposParam()
 {
+	escopo_atual = LOCAL;
 	if (mostraArvore)
 		PrintNodo("<TiposParam>", AVANCA);
 
@@ -1493,6 +1652,19 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
 				tk.processado = TRUE;
+
+				int checkSimb = findSimb(tk.lexema);
+				if (checkSimb)
+				{
+					if (compEsc(escopo_atual, checkSimb))
+					{
+						error("Redeclaracao de identificador");
+					}
+				}
+				else
+				{
+					// insertSimb(tk.lexema);
+				}
 			}
 			else
 			{
@@ -1517,6 +1689,19 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
 				tk.processado = TRUE;
+
+				int checkSimb = findSimb(tk.lexema);
+				if (checkSimb)
+				{
+					if (compEsc(escopo_atual, checkSimb))
+					{
+						error("Redeclaracao de identificador");
+					}
+				}
+				else
+				{
+					// insertSimb(tk.lexema);
+				}
 			}
 			else
 			{
@@ -1527,6 +1712,7 @@ void TiposParam()
 				tk = AnaLex(fd);
 			if (tk.cat == SN && tk.codigo == ABRE_COL)
 			{
+				// sinalizar array no simb na tabela
 				if (mostraArvore)
 					PrintNodo("[", MANTEM);
 				tk.processado = TRUE;
@@ -1722,7 +1908,7 @@ void Atrib()
 		PrintNodo("", RETROCEDE);
 }
 
-void Tipo()
+char Tipo()
 {
 	if (mostraArvore)
 		PrintNodo("<Tipo>", AVANCA);
@@ -1737,30 +1923,42 @@ void Tipo()
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo("INT", MANTEM);
+			return 'i';
 		}
 		else if (tk.codigo == CHAR)
 		{
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo("CHAR", MANTEM);
+			return 'c';
 		}
 		else if (tk.codigo == FLOAT)
 		{
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo("FLOAT", MANTEM);
+			return 'f';
 		}
 		else if (tk.codigo == BOOL)
 		{
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo("BOOL", MANTEM);
+			return 'b';
 		}
 	}
 	else if (tk.cat == ID)
 	{
 		// verificar ID da tabela de tipos
-		error("Identificador nao corresponde a um tipo valido!");
+		int typeidx = findType(tk.lexema);
+		if (typeidx)
+		{
+			return typeidx;
+		}
+		else
+		{
+			error("Identificador nao corresponde a um tipo valido!");
+		}
 	}
 	else
 	{

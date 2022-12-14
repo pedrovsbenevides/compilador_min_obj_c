@@ -1,9 +1,11 @@
 #ifndef _TYPE_TABLE_
 #define _TYPE_TABLE_
 
-extern char TYPES[50][50];
+#include "SimbTable.h"
+
+extern SIMBOLO TYPES[100];
 
 int findType(char lexema[]);
-void insertType(char lexema[]);
+int insertType(SIMBOLO simb);
 
 #endif

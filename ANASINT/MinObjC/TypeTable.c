@@ -6,11 +6,13 @@
 #include "FuncAux.h"
 #include "TypeTable.h"
 
+static int countTypes = 0;
+
 int findType(char lexema[])
 {
-    for (int i = 0; i <= sizeof(TYPES) / sizeof(TYPES[0]); i++)
+    for (int i = countTypes; i >= 0; i--)
     {
-        if (strcmp(lexema, TYPES[i]) == 0)
+        if (strcmp(lexema, TYPES[i].lexema) == 0)
         {
             return 1;
         }
@@ -19,11 +21,11 @@ int findType(char lexema[])
 }
 
 // inserir
-void insertType(char lexema[])
+int insertType(SIMBOLO type)
 {
-    static int countTypes = 0;
-
-    strcpy(TYPES[countTypes], lexema);
-
     countTypes++;
+
+    TYPES[countTypes] = type;
+
+    return countTypes;
 }
