@@ -61,22 +61,19 @@ void ObjDef()
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
 
-		int checkSimb = findSimb(tk.lexema);
-		if (checkSimb)
+		int checkType = findType(tk.lexema);
+		PrintNodoInt(checkType, MANTEM);
+		if (checkType)
 		{
-			if (compEsc(escopo_atual, checkSimb))
-			{
-				error("Redeclaracao de identificador");
-			}
+			error("Redeclaracao de OBJ");
 		}
 		else
 		{
 			newType.papel = OBJ;
 			newType.escopo = escopo_atual;
-			strcpy(newType.tipo_def, tk.lexema);
 			strcpy(newType.lexema, tk.lexema);
 
-			insertSimb(newType);
+			insertType(newType);
 		}
 	}
 	else
@@ -246,12 +243,17 @@ void DeclVar()
 		}
 
 		int checkSimb = findSimb(tk.lexema);
+		int checkType = findType(tk.lexema);
 		if (checkSimb)
 		{
 			if (compEsc(escopo_atual, checkSimb))
 			{
 				error("Redeclaracao de identificador");
 			}
+		}
+		else if (checkType)
+		{
+			error("Redeclaracao de OBJ");
 		}
 		else
 		{
@@ -469,12 +471,17 @@ void DeclVarFunc()
 		}
 
 		int checkSimb = findSimb(tk.lexema);
+		int checkType = findType(tk.lexema);
 		if (checkSimb)
 		{
 			if (compEsc(escopo_atual, checkSimb))
 			{
 				error("Redeclaracao de identificador");
 			}
+		}
+		else if (checkType)
+		{
+			error("Redeclaracao de OBJ");
 		}
 		else
 		{
@@ -606,17 +613,22 @@ void DeclListVar(int listSimbType)
 			tk.processado = TRUE;
 
 			int checkSimb = findSimb(tk.lexema);
+			int checkType = findType(tk.lexema);
 			if (checkSimb)
 			{
 				if (compEsc(escopo_atual, checkSimb))
 				{
 					error("Redeclaracao de identificador");
 				}
-				else
-				{
-					newSimb.escopo = escopo_atual;
-					newSimbIdx = insertSimb(newSimb);
-				}
+			}
+			else if (checkType)
+			{
+				error("Redeclaracao de OBJ");
+			}
+			else
+			{
+				newSimb.escopo = escopo_atual;
+				newSimbIdx = insertSimb(newSimb);
 			}
 		}
 		else
@@ -894,6 +906,7 @@ void DeclListFunc()
 			tk.processado = TRUE;
 
 			int checkSimb = findSimb(tk.lexema);
+			int checkType = findType(tk.lexema);
 			if (checkSimb)
 			{
 				if (compEsc(escopo_atual, checkSimb))
@@ -960,6 +973,7 @@ void Func()
 		if (mostraArvore)
 			PrintNodo("{", MANTEM);
 		tk.processado = TRUE;
+		escopo_atual = LOCAL;
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -1001,6 +1015,7 @@ void Func()
 			if (mostraArvore)
 				PrintNodo("}", MANTEM);
 			tk.processado = TRUE;
+			escopo_atual = GLOBAL;
 		}
 		else
 		{
@@ -1101,7 +1116,7 @@ void Cmd()
 				tk = AnaLex(fd);
 				if (tk.cat != SN && tk.codigo != PONTO_VIRG)
 				{
-					Atrib(1);
+					Atrib();
 				}
 
 				if (tk.processado)
@@ -1251,6 +1266,7 @@ void Cmd()
 		tk.processado = TRUE;
 		if (mostraArvore)
 			PrintNodo("{", MANTEM);
+		escopo_atual = LOCAL;
 
 		tk = AnaLex(fd);
 		while ((tk.cat != SN && tk.codigo != FECHA_CHAVE) || (tk.cat == SN && tk.codigo == PONTO_VIRG))
@@ -1268,6 +1284,7 @@ void Cmd()
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo("}", MANTEM);
+			escopo_atual = GLOBAL;
 		}
 		else
 		{
@@ -1288,6 +1305,7 @@ void Cmd()
 				PrintNodo(tk.lexema, MANTEM);
 
 			int checkSimb = findSimb(tk.lexema);
+			int checkType = findType(tk.lexema);
 			if (checkSimb)
 			{
 				if (compEsc(escopo_atual, checkSimb))
@@ -1391,6 +1409,7 @@ void Cmd()
 			PrintNodo(tk.lexema, MANTEM);
 
 		int checkSimb = findSimb(tk.lexema);
+		int checkType = findType(tk.lexema);
 		if (checkSimb)
 		{
 			if (compEsc(escopo_atual, checkSimb))
@@ -1654,6 +1673,7 @@ void TiposParam()
 				tk.processado = TRUE;
 
 				int checkSimb = findSimb(tk.lexema);
+				int checkType = findType(tk.lexema);
 				if (checkSimb)
 				{
 					if (compEsc(escopo_atual, checkSimb))
@@ -1691,6 +1711,7 @@ void TiposParam()
 				tk.processado = TRUE;
 
 				int checkSimb = findSimb(tk.lexema);
+				int checkType = findType(tk.lexema);
 				if (checkSimb)
 				{
 					if (compEsc(escopo_atual, checkSimb))
