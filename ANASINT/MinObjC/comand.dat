@@ -1,5 +1,23 @@
 int x;
+
+int soma(int y, int x) {
+  int z;
+
+  z = y + x;
+
+  return z
+}
+
+int potencia(int y) {
+  int z; 
+
+  z = y * y;
+
+  return z
+}
+
 void main() {
-  x = ((2 + 3) * 7 / 3 - (4 + 5)) *   3 / 2;
-  x = x + 5;
+  x = soma(3, 5);
+
+  x = potencia(x);
 }

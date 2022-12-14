@@ -323,6 +323,13 @@ void DeclVar()
 
 void SignFunc()
 {
+	SIMBOLO newSimb;
+	int newSimbIdx;
+	int newSimbType;
+	newSimb.ponteiro = FALSE;
+	newSimb.array = FALSE;
+	newSimb.papel = FUNC;
+
 	if (mostraArvore)
 		PrintNodo("<SignFunc>", AVANCA);
 
@@ -334,10 +341,25 @@ void SignFunc()
 		if (mostraArvore)
 			PrintNodo("VOID", MANTEM);
 		tk.processado = TRUE;
+		newSimbType = VOID;
 	}
 	else
 	{
-		Tipo();
+		switch (Tipo())
+		{
+		case 'i':
+			newSimbType = INT;
+			break;
+		case 'f':
+			newSimbType = FLOAT;
+			break;
+		case 'c':
+			newSimbType = CHAR;
+			break;
+		case 'b':
+			newSimbType = BOOL;
+			break;
+		}
 	}
 
 	tk = AnaLex(fd);
@@ -346,6 +368,7 @@ void SignFunc()
 		if (mostraArvore)
 			PrintNodo("^", MANTEM);
 		tk.processado = TRUE;
+		newSimb.ponteiro = TRUE;
 	}
 
 	if (tk.processado)
@@ -359,6 +382,23 @@ void SignFunc()
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
+
+		strcpy(newSimb.lexema, tk.lexema);
+
+		int checkSimb = findSimb(newSimb.lexema);
+		if (checkSimb)
+		{
+			if (compEsc(escopo_atual, checkSimb))
+			{
+				error("Redeclaracao de identificador");
+			}
+		}
+		else
+		{
+			newSimb.escopo = escopo_atual;
+			newSimb.tipo = newSimbType;
+			newSimbIdx = insertSimb(newSimb);
+		}
 	}
 
 	tk = AnaLex(fd);
@@ -368,7 +408,7 @@ void SignFunc()
 			PrintNodo("(", MANTEM);
 		tk.processado = TRUE;
 
-		TiposParam();
+		TiposParam(newSimbIdx);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -467,17 +507,12 @@ void DeclVarFunc()
 		strcpy(newSimb.lexema, tk.lexema);
 
 		int checkSimb = findSimb(tk.lexema);
-		int checkType = findType(tk.lexema);
 		if (checkSimb)
 		{
-			if (compEsc(escopo_atual, checkSimb))
+			if (compEsc(escopo_atual, checkSimb) && compVarInFunc(newSimb.lexema))
 			{
 				error("Redeclaracao de identificador");
 			}
-		}
-		else if (checkType)
-		{
-			error("Redeclaracao de OBJ");
 		}
 		else
 		{
@@ -547,7 +582,7 @@ void DeclVarFunc()
 	}
 	else if (tk.cat == SN && tk.codigo == ABRE_PAR)
 	{
-		FuncProt();
+		FuncProt(newSimbIdx);
 	}
 	else if (tk.cat == SN && tk.codigo == QUATR_PONTOS)
 	{
@@ -569,7 +604,7 @@ void DeclVarFunc()
 			error("identificador esperado");
 		}
 
-		FuncProt();
+		FuncProt(newSimbIdx);
 	}
 
 	if (mostraArvore)
@@ -804,7 +839,7 @@ void MethSec()
 		PrintNodo("", RETROCEDE);
 }
 
-void FuncProt()
+void FuncProt(int funcIdx)
 {
 	if (mostraArvore)
 		PrintNodo("<FuncProt>", AVANCA);
@@ -817,7 +852,7 @@ void FuncProt()
 			PrintNodo("(", MANTEM);
 		tk.processado = TRUE;
 
-		TiposParam();
+		TiposParam(funcIdx);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -848,7 +883,7 @@ void FuncProt()
 		}
 		else if (tk.cat == SN && tk.codigo == VIRG)
 		{
-			DeclListFunc();
+			DeclListFunc(funcIdx);
 
 			if (tk.processado)
 				tk = AnaLex(fd);
@@ -877,7 +912,7 @@ void FuncProt()
 		PrintNodo("", RETROCEDE);
 }
 
-void DeclListFunc()
+void DeclListFunc(int funcIdx)
 {
 	if (mostraArvore)
 		PrintNodo("<DeclListFunc>", AVANCA);
@@ -886,6 +921,13 @@ void DeclListFunc()
 		tk = AnaLex(fd);
 	while (tk.cat == SN && tk.codigo == VIRG)
 	{
+		SIMBOLO newSimb;
+		int newSimbIdx;
+		int newSimbType = getFuncType(funcIdx);
+		newSimb.ponteiro = FALSE;
+		newSimb.array = FALSE;
+		newSimb.papel = FUNC;
+
 		if (mostraArvore)
 			PrintNodo(",", MANTEM);
 		tk.processado = TRUE;
@@ -897,12 +939,15 @@ void DeclListFunc()
 			if (mostraArvore)
 				PrintNodo("^", MANTEM);
 			tk.processado = TRUE;
+			newSimb.ponteiro = TRUE;
 		}
 
 		if (tk.processado)
 			tk = AnaLex(fd);
 		if (tk.cat == ID)
 		{
+			strcpy(newSimb.lexema, tk.lexema);
+
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
 			tk.processado = TRUE;
@@ -918,7 +963,9 @@ void DeclListFunc()
 			}
 			else
 			{
-				// insertSimb(tk.lexema);
+				newSimb.escopo = escopo_atual;
+				newSimb.tipo = newSimbType;
+				newSimbIdx = insertSimb(newSimb);
 			}
 		}
 		else
@@ -934,7 +981,7 @@ void DeclListFunc()
 				PrintNodo("(", MANTEM);
 			tk.processado = TRUE;
 
-			TiposParam();
+			TiposParam(newSimbIdx);
 
 			if (tk.processado)
 				tk = AnaLex(fd);
@@ -1417,18 +1464,10 @@ void Cmd()
 
 		int checkSimb = findSimb(tk.lexema);
 		int checkType = findType(tk.lexema);
-		if (checkSimb)
+		if (!checkSimb && !checkType)
 		{
-			if (compEsc(escopo_atual, checkSimb))
-			{
-				error("Redeclaracao de identificador");
-			}
+			error("identificador não declarado");
 		}
-		else
-		{
-			// insertSimb(tk.lexema);
-		}
-
 		tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == PONTO)
 		{
@@ -1642,7 +1681,7 @@ void RestAtrib()
 		PrintNodo("", RETROCEDE);
 }
 
-void TiposParam()
+void TiposParam(int funcIdx)
 {
 	escopo_atual = LOCAL;
 
@@ -1717,7 +1756,7 @@ void TiposParam()
 				int checkSimb = findSimb(tk.lexema);
 				if (checkSimb)
 				{
-					if (compEsc(escopo_atual, checkSimb))
+					if (compEsc(escopo_atual, checkSimb) && compFunc(checkSimb, funcIdx))
 					{
 						error("Redeclaracao de identificador");
 					}
@@ -1757,7 +1796,7 @@ void TiposParam()
 				int checkSimb = findSimb(tk.lexema);
 				if (checkSimb)
 				{
-					if (compEsc(escopo_atual, checkSimb))
+					if (compEsc(escopo_atual, checkSimb) && compFunc(checkSimb, funcIdx))
 					{
 						error("Redeclaracao de identificador");
 					}
@@ -2487,6 +2526,45 @@ void Fator()
 				else
 				{
 					error("fechamento de colchetes esperado");
+				}
+			}
+			else if (tk.cat == SN && tk.codigo == ABRE_PAR)
+			{
+				tk.processado = TRUE;
+				if (mostraArvore)
+					PrintNodo("(", MANTEM);
+
+				tk = AnaLex(fd);
+				if (tk.cat != SN || tk.codigo != FECHA_PAR)
+				{
+					Expr();
+
+					if (tk.processado)
+						tk = AnaLex(fd);
+					while (tk.cat == SN && tk.codigo == VIRG)
+					{
+						tk.processado = TRUE;
+						if (mostraArvore)
+							PrintNodo(",", MANTEM);
+
+						Expr();
+
+						if (tk.processado)
+							tk = AnaLex(fd);
+					}
+				}
+
+				if (tk.processado)
+					tk = AnaLex(fd);
+				if (tk.cat == SN && tk.codigo == FECHA_PAR)
+				{
+					tk.processado = TRUE;
+					if (mostraArvore)
+						PrintNodo(")", MANTEM);
+				}
+				else
+				{
+					error("fechamento de parenteses esperado");
 				}
 			}
 		}

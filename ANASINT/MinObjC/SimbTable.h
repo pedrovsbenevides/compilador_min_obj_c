@@ -62,5 +62,9 @@ int compCntx(int contexto, int simbIdx);
 int compTipo(int tipo, int simbIdx);
 int insertSimb(SIMBOLO simb);
 void setIsArray(int simbIdx);
+int compFunc(int simbIdx, int funcIdx);
+int getFuncType(int funcIdx);
+int compVarInFunc(char lexema[]);
+int checkIsGlobal(int simbIdx);
 
 #endif
