@@ -18,7 +18,7 @@ int findSimb(char lexema[])
             return i;
         }
     }
-    return 0;
+    return FALSE;
 }
 
 // verificação de escopo, global ou local
@@ -26,35 +26,32 @@ int compEsc(int escopo, int simbIdx)
 {
     if (SIMB[simbIdx].escopo == escopo)
     {
-        return 1;
+        return TRUE;
     }
 
-    return 0;
+    return FALSE;
 }
 
 // verificação de contexto
-int compCntx(int contexto)
+int compCntx(int contexto, int simbIdx)
 {
-    for (int i = countSimbs; i >= 0; i--)
+    if (SIMB[simbIdx].papel == contexto)
     {
-        if (SIMB[i].papel == contexto)
-        {
-            return 1;
-        }
+        return TRUE;
     }
-    return 0;
+
+    return FALSE;
 }
 
-int compTipo(int tipo)
+int compTipo(int tipo, int simbIdx)
 {
-    for (int i = countSimbs; i >= 0; i--)
+
+    if (SIMB[simbIdx].tipo == tipo)
     {
-        if (SIMB[i].tipo == tipo)
-        {
-            return 1;
-        }
+        return TRUE;
     }
-    return 0;
+
+    return FALSE;
 }
 
 // inserir

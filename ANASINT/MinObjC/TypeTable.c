@@ -14,10 +14,10 @@ int findType(char lexema[])
     {
         if (strcmp(lexema, TYPES[i].lexema) == 0)
         {
-            return 1;
+            return TRUE;
         }
     }
-    return 0;
+    return FALSE;
 }
 
 // inserir

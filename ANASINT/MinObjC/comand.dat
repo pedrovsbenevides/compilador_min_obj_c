@@ -1,1 +1,8 @@
-int x[2];
+int ^x;
+void main(int x, int x) {
+  delete x;
+}
+
+void soma(int x) {
+  delete x;
+}

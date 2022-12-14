@@ -10,7 +10,7 @@ enum ESCOPO
 enum PAPEL
 {
     VAR = 1,
-    FUNCTION,
+    FUNC,
     OBJ,
     PARAM
 };
@@ -28,13 +28,13 @@ typedef
 
     int enderecoRel; // endereço relativo
 
-    int idx; // indice na tabela de simbolos
-
     int deslocamento; // deslocamento na maq de pilha
 
     int ponteiro; // indicador de se identificador é ponteiro ou não;
 
     int array; // indicador de se identificador é array ou não;
+
+    int referencia; // indicador de se identificador é passado por referencia ou não;
     union
     {
         int valInt; // valor caso tipo INT/BOOL
@@ -58,8 +58,8 @@ extern SIMBOLO SIMB[100]; // tabela de simbolos
 
 int findSimb(char lexema[]);
 int compEsc(int escopo, int simbIdx);
-int compCntx(int contexto);
-int compTipo(int tipo);
+int compCntx(int contexto, int simbIdx);
+int compTipo(int tipo, int simbIdx);
 int insertSimb(SIMBOLO simb);
 void setIsArray(int simbIdx);
 

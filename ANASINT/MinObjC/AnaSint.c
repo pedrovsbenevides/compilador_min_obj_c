@@ -237,11 +237,6 @@ void DeclVar()
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
 
-		if (newSimb.tipo == VOID && !newSimb.ponteiro)
-		{
-			error("ERRO: Apenas ponteiros podem ter tipo VOID");
-		}
-
 		int checkSimb = findSimb(tk.lexema);
 		int checkType = findType(tk.lexema);
 		if (checkSimb)
@@ -274,6 +269,11 @@ void DeclVar()
 		if (mostraArvore)
 			PrintNodo(";", MANTEM);
 		tk.processado = TRUE;
+
+		if (newSimb.tipo == VOID && !newSimb.ponteiro)
+		{
+			error("ERRO: Apenas ponteiros podem ter tipo VOID");
+		}
 	}
 	else if (tk.cat == SN && tk.codigo == VIRG)
 	{
@@ -378,6 +378,7 @@ void SignFunc()
 			if (mostraArvore)
 				PrintNodo(")", MANTEM);
 			tk.processado = TRUE;
+			escopo_atual = GLOBAL;
 		}
 		else
 		{
@@ -465,11 +466,6 @@ void DeclVarFunc()
 		newSimb.papel = VAR;
 		strcpy(newSimb.lexema, tk.lexema);
 
-		if (newSimb.tipo == VOID && !newSimb.ponteiro)
-		{
-			error("ERRO: Apenas ponteiros podem ter tipo VOID");
-		}
-
 		int checkSimb = findSimb(tk.lexema);
 		int checkType = findType(tk.lexema);
 		if (checkSimb)
@@ -502,6 +498,11 @@ void DeclVarFunc()
 		if (mostraArvore)
 			PrintNodo(";", MANTEM);
 		tk.processado = TRUE;
+
+		if (newSimb.tipo == VOID && !newSimb.ponteiro)
+		{
+			error("ERRO: Apenas ponteiros podem ter tipo VOID");
+		}
 	}
 	else if (tk.cat == SN && tk.codigo == VIRG)
 	{
@@ -826,6 +827,7 @@ void FuncProt()
 			if (mostraArvore)
 				PrintNodo(")", MANTEM);
 			tk.processado = TRUE;
+			escopo_atual = GLOBAL;
 		}
 		else
 		{
@@ -942,6 +944,7 @@ void DeclListFunc()
 				if (mostraArvore)
 					PrintNodo(")", MANTEM);
 				tk.processado = TRUE;
+				escopo_atual = GLOBAL;
 			}
 			else
 			{
@@ -1055,9 +1058,13 @@ void Cmd()
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
 
-				if (findSimb(tk.lexema))
+				int checkSimb = findSimb(tk.lexema);
+				if (checkSimb)
 				{
-					error("Identificador não declarado");
+					if (!SIMB[checkSimb].ponteiro)
+					{
+						error("ERRO: DELETE utilizado sobre nao ponteiro");
+					}
 				}
 			}
 			else
@@ -1629,6 +1636,14 @@ void RestAtrib()
 void TiposParam()
 {
 	escopo_atual = LOCAL;
+
+	SIMBOLO newSimb;
+	int newSimbIdx;
+	int newSimbType;
+	newSimb.ponteiro = FALSE;
+	newSimb.array = FALSE;
+	newSimb.papel = PARAM;
+
 	if (mostraArvore)
 		PrintNodo("<TiposParam>", AVANCA);
 
@@ -1642,10 +1657,25 @@ void TiposParam()
 			if (mostraArvore)
 				PrintNodo("VOID", MANTEM);
 			tk.processado = TRUE;
+			newSimbType = VOID;
 		}
 		else
 		{
-			Tipo();
+			switch (Tipo())
+			{
+			case 'i':
+				newSimbType = INT;
+				break;
+			case 'f':
+				newSimbType = FLOAT;
+				break;
+			case 'c':
+				newSimbType = CHAR;
+				break;
+			case 'b':
+				newSimbType = BOOL;
+				break;
+			}
 		}
 
 		if (tk.processado)
@@ -1655,6 +1685,7 @@ void TiposParam()
 			if (mostraArvore)
 				PrintNodo("&", MANTEM);
 			tk.processado = TRUE;
+			newSimb.referencia = TRUE;
 
 			tk = AnaLex(fd);
 			if (tk.cat == SN && tk.codigo == CIRCUNFLEXO)
@@ -1662,6 +1693,7 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo("^", MANTEM);
 				tk.processado = TRUE;
+				newSimb.ponteiro = TRUE;
 			}
 
 			if (tk.processado)
@@ -1671,9 +1703,9 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
 				tk.processado = TRUE;
+				strcpy(newSimb.lexema, tk.lexema);
 
 				int checkSimb = findSimb(tk.lexema);
-				int checkType = findType(tk.lexema);
 				if (checkSimb)
 				{
 					if (compEsc(escopo_atual, checkSimb))
@@ -1683,7 +1715,8 @@ void TiposParam()
 				}
 				else
 				{
-					// insertSimb(tk.lexema);
+					newSimb.escopo = escopo_atual;
+					newSimbIdx = insertSimb(newSimb);
 				}
 			}
 			else
@@ -1700,6 +1733,7 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo("^", MANTEM);
 				tk.processado = TRUE;
+				newSimb.ponteiro = TRUE;
 			}
 
 			if (tk.processado)
@@ -1709,9 +1743,9 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo(tk.lexema, MANTEM);
 				tk.processado = TRUE;
+				strcpy(newSimb.lexema, tk.lexema);
 
 				int checkSimb = findSimb(tk.lexema);
-				int checkType = findType(tk.lexema);
 				if (checkSimb)
 				{
 					if (compEsc(escopo_atual, checkSimb))
@@ -1721,7 +1755,9 @@ void TiposParam()
 				}
 				else
 				{
-					// insertSimb(tk.lexema);
+					newSimb.tipo = newSimbType;
+					newSimb.escopo = escopo_atual;
+					newSimbIdx = insertSimb(newSimb);
 				}
 			}
 			else
@@ -1733,7 +1769,7 @@ void TiposParam()
 				tk = AnaLex(fd);
 			if (tk.cat == SN && tk.codigo == ABRE_COL)
 			{
-				// sinalizar array no simb na tabela
+				setIsArray(newSimbIdx);
 				if (mostraArvore)
 					PrintNodo("[", MANTEM);
 				tk.processado = TRUE;
@@ -1757,6 +1793,13 @@ void TiposParam()
 			tk = AnaLex(fd);
 		while (tk.cat == SN && tk.codigo == VIRG)
 		{
+			SIMBOLO newSimb;
+			int newSimbIdx;
+			int newSimbType;
+			newSimb.ponteiro = FALSE;
+			newSimb.array = FALSE;
+			newSimb.papel = PARAM;
+
 			if (mostraArvore)
 				PrintNodo(",", MANTEM);
 			tk.processado = TRUE;
@@ -1766,10 +1809,25 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo("VOID", MANTEM);
 				tk.processado = TRUE;
+				newSimbType = VOID;
 			}
 			else
 			{
-				Tipo();
+				switch (Tipo())
+				{
+				case 'i':
+					newSimbType = INT;
+					break;
+				case 'f':
+					newSimbType = FLOAT;
+					break;
+				case 'c':
+					newSimbType = CHAR;
+					break;
+				case 'b':
+					newSimbType = BOOL;
+					break;
+				}
 			}
 
 			if (tk.processado)
@@ -1779,6 +1837,7 @@ void TiposParam()
 				if (mostraArvore)
 					PrintNodo("&", MANTEM);
 				tk.processado = TRUE;
+				newSimb.referencia = TRUE;
 
 				if (tk.processado)
 					tk = AnaLex(fd);
@@ -1787,6 +1846,7 @@ void TiposParam()
 					if (mostraArvore)
 						PrintNodo("^", MANTEM);
 					tk.processado = TRUE;
+					newSimb.ponteiro = TRUE;
 				}
 
 				if (tk.processado)
@@ -1800,6 +1860,23 @@ void TiposParam()
 					if (mostraArvore)
 						PrintNodo(tk.lexema, MANTEM);
 					tk.processado = TRUE;
+
+					strcpy(newSimb.lexema, tk.lexema);
+
+					int checkSimb = findSimb(tk.lexema);
+					if (checkSimb)
+					{
+						if (compEsc(escopo_atual, checkSimb))
+						{
+							error("Redeclaracao de identificador");
+						}
+					}
+					else
+					{
+						newSimb.tipo = newSimbType;
+						newSimb.escopo = escopo_atual;
+						newSimbIdx = insertSimb(newSimb);
+					}
 				}
 			}
 			else
@@ -1811,6 +1888,7 @@ void TiposParam()
 					if (mostraArvore)
 						PrintNodo("^", MANTEM);
 					tk.processado = TRUE;
+					newSimb.ponteiro = TRUE;
 				}
 
 				if (tk.processado)
@@ -1824,12 +1902,30 @@ void TiposParam()
 					if (mostraArvore)
 						PrintNodo(tk.lexema, MANTEM);
 					tk.processado = TRUE;
+
+					strcpy(newSimb.lexema, tk.lexema);
+
+					int checkSimb = findSimb(tk.lexema);
+					if (checkSimb)
+					{
+						if (compEsc(escopo_atual, checkSimb))
+						{
+							error("Redeclaracao de identificador");
+						}
+					}
+					else
+					{
+						newSimb.tipo = newSimbType;
+						newSimb.escopo = escopo_atual;
+						newSimbIdx = insertSimb(newSimb);
+					}
 				}
 
 				if (tk.processado)
 					tk = AnaLex(fd);
 				if (tk.cat == SN && tk.codigo == ABRE_COL)
 				{
+					setIsArray(newSimbIdx);
 					if (mostraArvore)
 						PrintNodo("[", MANTEM);
 					tk.processado = TRUE;
