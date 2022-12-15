@@ -133,3 +133,71 @@ void setPapel(int simbIdx, int papel)
 {
     SIMB[simbIdx].papel = papel;
 }
+
+void setEndRelativo(int simbIdx, int label)
+{
+    SIMB[simbIdx].enderecoRel = label;
+}
+
+int findMain()
+{
+    for (int i = countSimbs; i >= 0; i--)
+    {
+        if (strcmp("main", SIMB[i].lexema) == 0)
+        {
+            return i;
+        }
+    }
+
+    error("funcao Main nao encontrada");
+}
+
+int countGlobals()
+{
+    int globals = 0;
+    for (int i = countSimbs; i >= 0; i--)
+    {
+        if (SIMB[i].escopo == GLOBAL && SIMB[i].papel == VAR)
+        {
+            globals++;
+        }
+    }
+
+    return globals;
+}
+
+int countArgs(int funcIdx)
+{
+    int args = 0;
+    for (int i = (funcIdx + 1); i <= countSimbs; i++)
+    {
+        if (SIMB[i].escopo == LOCAL && SIMB[i].papel == PARAM)
+        {
+            args++;
+        }
+        else if (SIMB[i].papel == FUNC)
+        {
+            return args;
+        }
+    }
+
+    return args;
+}
+
+int countLocals(int funcIdx)
+{
+    int locals = 0;
+    for (int i = (funcIdx + 1); i <= countSimbs; i++)
+    {
+        if (SIMB[i].escopo == LOCAL && SIMB[i].papel == VAR)
+        {
+            locals++;
+        }
+        else if (SIMB[i].papel == FUNC)
+        {
+            return locals;
+        }
+    }
+
+    return locals;
+}

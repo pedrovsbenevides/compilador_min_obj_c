@@ -67,5 +67,10 @@ int getFuncType(int funcIdx);
 int compVarInFunc(char lexema[]);
 int checkIsGlobal(int simbIdx);
 void setPapel(int simbIdx, int papel);
+void setEndRelativo(int simbIdx, int label);
+int findMain();
+int countGlobals();
+int countArgs(int funcIdx);
+int countLocals(int funcIdx);
 
 #endif

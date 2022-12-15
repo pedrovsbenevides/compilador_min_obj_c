@@ -15,6 +15,8 @@ int escopo_atual = GLOBAL;
 
 void Prog()
 {
+	char cmdObj[20];
+
 	fputs("INIP\n", fd_out);
 
 	if (mostraArvore)
@@ -43,6 +45,13 @@ void Prog()
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
+
+	int mainIdx = findMain();
+	sprintf(cmdObj, "CALL L%d\n", SIMB[mainIdx].enderecoRel);
+	fputs(cmdObj, fd_out);
+
+	sprintf(cmdObj, "DMEM %d\n", countGlobals());
+	fputs(cmdObj, fd_out);
 
 	fputs("HALT\n", fd_out);
 }
@@ -540,7 +549,7 @@ void DeclVarFunc()
 		if (mostraArvore)
 			PrintNodo(";", MANTEM);
 		tk.processado = TRUE;
-		// newSimb.papel = VAR;
+
 		setPapel(newSimbIdx, VAR);
 
 		if (newSimb.tipo == VOID && !newSimb.ponteiro)
@@ -553,6 +562,8 @@ void DeclVarFunc()
 	}
 	else if (tk.cat == SN && tk.codigo == VIRG)
 	{
+		setPapel(newSimbIdx, VAR);
+
 		countMem += DeclListVar(newSimbType);
 
 		sprintf(cmdObj, "AMEM %d\n", countMem);
@@ -675,17 +686,19 @@ int DeclListVar(int listSimbType)
 			{
 				if (compEsc(escopo_atual, checkSimb) && compVarInFunc(newSimb.lexema))
 				{
-					error("aqui");
+					error("Redeclaracao de variavel");
+				}
+				else
+				{
+					newSimb.escopo = escopo_atual;
+					newSimb.papel = VAR;
+					PrintNodo(newSimb.lexema, MANTEM);
+					newSimbIdx = insertSimb(newSimb);
 				}
 			}
 			else if (checkType)
 			{
 				error("Redeclaracao de OBJ");
-			}
-			else
-			{
-				newSimb.escopo = escopo_atual;
-				newSimbIdx = insertSimb(newSimb);
 			}
 		}
 		else
@@ -879,7 +892,10 @@ void FuncProt(int funcIdx)
 
 	sprintf(cmdObj, "LABEL L%d\n", countLabels);
 	fputs(cmdObj, fd_out);
+	setEndRelativo(funcIdx, countLabels);
 	countLabels++;
+
+	fputs("INIPR 1\n", fd_out);
 
 	if (tk.processado)
 		tk = AnaLex(fd);
@@ -947,6 +963,17 @@ void FuncProt(int funcIdx)
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
+
+	int locals = countLocals(funcIdx);
+	if (locals)
+	{
+		/* code */
+	}
+	sprintf(cmdObj, "DMEM %d\n", locals);
+	fputs(cmdObj, fd_out);
+
+	sprintf(cmdObj, "RET  1,%d\n", countArgs(funcIdx));
+	fputs(cmdObj, fd_out);
 
 	sprintf(cmdObj, "LABEL L%d\n", labelfunc);
 	fputs(cmdObj, fd_out);
