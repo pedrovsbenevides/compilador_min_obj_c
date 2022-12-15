@@ -6,6 +6,9 @@
 // executavel estavel gerado (AnaSint.exe)
 // regras de produção que foram alteradas dando origem a novos terminais que foram utilizados. disponivel em formato txt e pdf
 
+// Nesta nova versão codigo foi enxertado no AnaSint para validação de algumas regras semanticas e geração de codigo para maquina de pilha
+//  novos métodos tambem foram implementaos no modulo da tabela de simbolos conforme se tornou necessario;
+
 // Para gerar um novo executavel 1.Abra o terminal na pasta MinObjC
 // 2.Digite o comando => gcc MinObjC.c AnaLex.c AnaSint.c FuncAux.c TypeTable.c SimbTable.c
 // 3.Rode o executavel no terminal com .\"nome do executavel gerado".exe
