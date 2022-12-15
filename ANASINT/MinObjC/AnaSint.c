@@ -47,7 +47,7 @@ void Prog()
 		PrintNodo("", RETROCEDE);
 
 	int mainIdx = findMain();
-	sprintf(cmdObj, "CALL L%d\n", SIMB[mainIdx].enderecoRel);
+	sprintf(cmdObj, "CALL L%d\n", getEndRelativo(mainIdx));
 	fputs(cmdObj, fd_out);
 
 	sprintf(cmdObj, "DMEM %d\n", countGlobals());
@@ -1220,6 +1220,8 @@ void Cmd()
 			{
 				error("ponto e virgula esperado");
 			}
+
+			fputs("STOR 1,-5\n", fd_out);
 		}
 		else if (tk.codigo == FOR)
 		{
@@ -1530,14 +1532,20 @@ void Cmd()
 			PrintNodo(tk.lexema, MANTEM);
 
 		int checkSimb = findSimb(tk.lexema);
-		int checkType = findType(tk.lexema);
-		if (!checkSimb && !checkType)
+		if (!checkSimb)
 		{
 			error("identificador não declarado");
 		}
+
 		tk = AnaLex(fd);
 		if (tk.cat == SN && tk.codigo == PONTO)
 		{
+			int checkType = findType(tk.lexema);
+			if (!checkType)
+			{
+				error("identificador de OBJ não declarado");
+			}
+
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo(".", MANTEM);
@@ -1663,7 +1671,7 @@ void Cmd()
 		}
 		else
 		{
-			RestAtrib();
+			RestAtrib(checkSimb);
 
 			if (tk.processado)
 				tk = AnaLex(fd);
@@ -1684,13 +1692,9 @@ void Cmd()
 		PrintNodo("", RETROCEDE);
 }
 
-void RestAtrib()
+void RestAtrib(int simbIdx)
 {
 	char cmdObj[20];
-	int simb = findSimb(tk.lexema);
-
-	sprintf(cmdObj, "LOAD %d\n", SIMB[simb].enderecoRel);
-	fputs(cmdObj, fd_out);
 
 	if (mostraArvore)
 		PrintNodo("<RestAtrib>", AVANCA);
@@ -1741,7 +1745,7 @@ void RestAtrib()
 		Expr();
 	}
 
-	sprintf(cmdObj, "STOR %d\n", SIMB[simb].enderecoRel);
+	sprintf(cmdObj, "STOR %d,%d\n", getEscopo(simbIdx), getEndRelativo(simbIdx));
 	fputs(cmdObj, fd_out);
 
 	if (mostraArvore)
@@ -2144,7 +2148,7 @@ void Atrib()
 		Expr();
 	}
 
-	sprintf(cmdObj, "STOR %d\n", SIMB[simb].enderecoRel);
+	sprintf(cmdObj, "STOR %d,%d\n", getEscopo(simb), getEndRelativo(simb));
 	fputs(cmdObj, fd_out);
 
 	if (mostraArvore)
@@ -2493,11 +2497,28 @@ void Fator()
 			tk.processado = TRUE;
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
-			/*TRATAR IDENTIFICADOR*/
+
+			int checkSimb = findSimb(tk.lexema);
+			if (!checkSimb)
+			{
+				error("Identificador não declarado");
+			}
+
+			if (!checkIsFunc(checkSimb))
+			{
+				sprintf(cmdObj, "LOAD %d,%d\n", getEscopo(checkSimb), getEndRelativo(checkSimb));
+				fputs(cmdObj, fd_out);
+			}
 
 			tk = AnaLex(fd);
 			if (tk.cat == SN && tk.codigo == PONTO)
 			{
+				int checkType = findType(tk.lexema);
+				if (!checkType)
+				{
+					error("Identificador não declarado");
+				}
+
 				tk.processado = TRUE;
 				if (mostraArvore)
 					PrintNodo(".", MANTEM);
@@ -2628,6 +2649,9 @@ void Fator()
 					tk.processado = TRUE;
 					if (mostraArvore)
 						PrintNodo(")", MANTEM);
+
+					sprintf(cmdObj, "CALL L%d\n", getEndRelativo(checkSimb));
+					fputs(cmdObj, fd_out);
 				}
 				else
 				{

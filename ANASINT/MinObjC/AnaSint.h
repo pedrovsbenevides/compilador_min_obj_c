@@ -26,7 +26,7 @@ void MethSec();
 void FuncProt(int funcIdx);
 void Func();
 void Cmd();
-void RestAtrib();
+void RestAtrib(int simbIdx);
 void TiposParam(int funcIdx);
 void Atrib();
 char Tipo();

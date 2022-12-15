@@ -201,3 +201,25 @@ int countLocals(int funcIdx)
 
     return locals;
 }
+
+int getEndRelativo(int simbIdx)
+{
+    return SIMB[simbIdx].enderecoRel;
+}
+
+int getEscopo(int simbIdx)
+{
+    if (SIMB[simbIdx].escopo == GLOBAL)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+int checkIsFunc(int simbIdx)
+{
+    return SIMB[simbIdx].papel == FUNC;
+}

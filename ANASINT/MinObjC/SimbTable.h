@@ -68,9 +68,12 @@ int compVarInFunc(char lexema[]);
 int checkIsGlobal(int simbIdx);
 void setPapel(int simbIdx, int papel);
 void setEndRelativo(int simbIdx, int label);
+int getEndRelativo(int simbIdx);
 int findMain();
 int countGlobals();
 int countArgs(int funcIdx);
 int countLocals(int funcIdx);
+int getEscopo(int simbIdx);
+int checkIsFunc(int simbIdx);
 
 #endif
