@@ -66,5 +66,6 @@ int compFunc(int simbIdx, int funcIdx);
 int getFuncType(int funcIdx);
 int compVarInFunc(char lexema[]);
 int checkIsGlobal(int simbIdx);
+void setPapel(int simbIdx, int papel);
 
 #endif

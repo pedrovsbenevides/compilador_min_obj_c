@@ -15,6 +15,8 @@ int escopo_atual = GLOBAL;
 
 void Prog()
 {
+	fputs("INIP\n", fd_out);
+
 	if (mostraArvore)
 		PrintNodo("<Prog>", AVANCA);
 
@@ -41,6 +43,8 @@ void Prog()
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
+
+	fputs("HALT\n", fd_out);
 }
 
 void ObjDef()
@@ -455,6 +459,9 @@ void DeclVarFunc()
 	newSimb.ponteiro = FALSE;
 	newSimb.array = FALSE;
 
+	int countMem = 0;
+	char cmdObj[20];
+
 	if (mostraArvore)
 		PrintNodo("<DeclVarFunc>", AVANCA);
 
@@ -503,7 +510,6 @@ void DeclVarFunc()
 		if (mostraArvore)
 			PrintNodo(tk.lexema, MANTEM);
 		tk.processado = TRUE;
-		newSimb.papel = VAR;
 		strcpy(newSimb.lexema, tk.lexema);
 
 		int checkSimb = findSimb(tk.lexema);
@@ -519,6 +525,7 @@ void DeclVarFunc()
 			newSimb.escopo = escopo_atual;
 			newSimb.tipo = newSimbType;
 			newSimbIdx = insertSimb(newSimb);
+			countMem++;
 		}
 	}
 	else
@@ -533,15 +540,23 @@ void DeclVarFunc()
 		if (mostraArvore)
 			PrintNodo(";", MANTEM);
 		tk.processado = TRUE;
+		// newSimb.papel = VAR;
+		setPapel(newSimbIdx, VAR);
 
 		if (newSimb.tipo == VOID && !newSimb.ponteiro)
 		{
 			error("ERRO: Apenas ponteiros podem ter tipo VOID");
 		}
+
+		sprintf(cmdObj, "AMEM %d\n", countMem);
+		fputs(cmdObj, fd_out);
 	}
 	else if (tk.cat == SN && tk.codigo == VIRG)
 	{
-		DeclListVar(newSimbType);
+		countMem += DeclListVar(newSimbType);
+
+		sprintf(cmdObj, "AMEM %d\n", countMem);
+		fputs(cmdObj, fd_out);
 
 		if (tk.processado)
 			tk = AnaLex(fd);
@@ -611,8 +626,10 @@ void DeclVarFunc()
 		PrintNodo("", RETROCEDE);
 }
 
-void DeclListVar(int listSimbType)
+int DeclListVar(int listSimbType)
 {
+	int countVars = 0;
+
 	if (mostraArvore)
 		PrintNodo("<DeclListVar>", AVANCA);
 
@@ -644,17 +661,21 @@ void DeclListVar(int listSimbType)
 			tk = AnaLex(fd);
 		if (tk.cat == ID)
 		{
+			countVars++;
+
 			if (mostraArvore)
 				PrintNodo(tk.lexema, MANTEM);
 			tk.processado = TRUE;
+
+			strcpy(newSimb.lexema, tk.lexema);
 
 			int checkSimb = findSimb(tk.lexema);
 			int checkType = findType(tk.lexema);
 			if (checkSimb)
 			{
-				if (compEsc(escopo_atual, checkSimb))
+				if (compEsc(escopo_atual, checkSimb) && compVarInFunc(newSimb.lexema))
 				{
-					error("Redeclaracao de identificador");
+					error("aqui");
 				}
 			}
 			else if (checkType)
@@ -685,6 +706,8 @@ void DeclListVar(int listSimbType)
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
+
+	return countVars;
 }
 
 void DeclArrayVar(int varIdx)
@@ -841,8 +864,22 @@ void MethSec()
 
 void FuncProt(int funcIdx)
 {
+	char cmdObj[20];
+	int labelfunc;
+
+	setPapel(funcIdx, FUNC);
+
 	if (mostraArvore)
 		PrintNodo("<FuncProt>", AVANCA);
+
+	sprintf(cmdObj, "GOTO L%d\n", countLabels);
+	fputs(cmdObj, fd_out);
+	labelfunc = countLabels;
+	countLabels++;
+
+	sprintf(cmdObj, "LABEL L%d\n", countLabels);
+	fputs(cmdObj, fd_out);
+	countLabels++;
 
 	if (tk.processado)
 		tk = AnaLex(fd);
@@ -910,6 +947,9 @@ void FuncProt(int funcIdx)
 
 	if (mostraArvore)
 		PrintNodo("", RETROCEDE);
+
+	sprintf(cmdObj, "LABEL L%d\n", labelfunc);
+	fputs(cmdObj, fd_out);
 }
 
 void DeclListFunc(int funcIdx)

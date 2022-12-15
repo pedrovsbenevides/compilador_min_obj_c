@@ -89,9 +89,10 @@ int compFunc(int simbIdx, int funcIdx)
 // busca identificador e caso encontre verifica pertencimento a alguma função habilitando redeclaração em funções distintas
 int compVarInFunc(char lexema[])
 {
+    int funcIdx = -1;
     for (int i = countSimbs; i >= 0; i--)
     {
-        int funcIdx;
+
         if (SIMB[i].papel == FUNC)
         {
             funcIdx = i;
@@ -109,6 +110,11 @@ int compVarInFunc(char lexema[])
         }
     }
 
+    if (funcIdx == -1)
+    {
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -121,4 +127,9 @@ int getFuncType(int funcIdx)
 int checkIsGlobal(int simbIdx)
 {
     return SIMB[simbIdx].escopo == GLOBAL;
+}
+
+void setPapel(int simbIdx, int papel)
+{
+    SIMB[simbIdx].papel = papel;
 }

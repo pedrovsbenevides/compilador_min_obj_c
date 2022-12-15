@@ -1,23 +1,27 @@
-int x;
+int x; 
 
-int soma(int y, int x) {
-  int z;
-
-  z = y + x;
-
-  return z
-}
-
-int potencia(int y) {
+int soma(int a, int b) { 
   int z; 
 
-  z = y * y;
+  z = a + b; 
 
   return z
-}
+} 
 
 void main() {
-  x = soma(3, 5);
+  int y, z; 
 
-  x = potencia(x);
-}
+  x = 3; 
+  y = 2; 
+  z = 0; 
+
+  while (z < 50) { 
+
+    z = soma(x, y); 
+
+    x = x + 1; 
+
+    y = y + x; 
+
+  } 
+}  

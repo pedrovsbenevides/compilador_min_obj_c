@@ -19,7 +19,7 @@ void DataSec();
 void DeclVar();
 void SignFunc();
 void DeclVarFunc();
-void DeclListVar(int listSimbType);
+int DeclListVar(int listSimbType);
 void DeclListFunc(int funcIdx);
 void DeclArrayVar(int varIdx);
 void MethSec();

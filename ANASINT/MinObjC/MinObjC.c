@@ -27,7 +27,7 @@ enum BOOL mostraArvore = TRUE;
 char TABS[200] = "";
 SIMBOLO TYPES[100]; // tabela de tipos
 SIMBOLO SIMB[100];  // tabela de simbolos
-int countLabels = 0;
+int countLabels = 1;
 
 void Analex()
 {
